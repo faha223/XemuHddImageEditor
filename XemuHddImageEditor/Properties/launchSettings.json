@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "XemuHddImageEditor": {
+      "commandName": "Project",
+      "commandLineArgs": "-m Search -q **\\*.xbe"
+    }
+  }
+}

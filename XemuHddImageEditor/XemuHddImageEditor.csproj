@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../InteropHelpers/InteropHelpers.csproj" />
+    <ProjectReference Include="../FatX.Net/FatX.Net.csproj" />
+	<ProjectReference Include="../QCow2.Net/QCow2.Net.csproj" />
+  </ItemGroup>
+
+</Project>
