@@ -1,9 +1,8 @@
-namespace XemuHddImageEditor
+namespace XemuHddImageEditor;
+
+public enum OperationMode
 {
-    public enum OperationMode
-    {
-        List = 0,
-        Extract = 1,
-        Search = 2
-    }
+    List = 0,
+    Extract = 1,
+    Search = 2
 }

@@ -1,0 +1,142 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:XemuHddImageEditor"
+             RequestedThemeVariant="Dark"
+             x:Class="XemuHddImageEditor.App">
+
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+    <Application.Resources>
+        <DrawingGroup x:Key="OpenFolderIcon">
+			<GeometryDrawing Geometry="m 0,12 L 3,4 L 19,4 L 16,12 L 0,12 L 0,1.5 L 2,1.5 L 4,0 L 7,0 L 9,1.5 L 16,1.5 L 16,4">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="#FFDDDDDD" Thickness="1.5" />
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+		</DrawingGroup>
+        <DrawingGroup x:Key="ClosedFolderIcon">
+			<GeometryDrawing Geometry="m 0,12 L 0,1.5 L 2,1.5 L 4,0 L 7,0 L 9,1.5 L 16,1.5 L 16,12 L 0,12">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="#FFDDDDDD" Thickness="1.5" />
+                </GeometryDrawing.Pen>
+            </GeometryDrawing>
+		</DrawingGroup>
+        <DrawingGroup x:Key="FileIcon">
+            <GeometryDrawing Geometry="m 7,0 L 7,5 L 12,5 L 12,18 L 0,18 L 0,0 L 7,0 L 12,5 M 2,6 L 10,6 M 2,9 L 10,9 M 2,12 L 10,12 M 2,15 L 10,15">
+                <GeometryDrawing.Pen>
+                    <Pen Brush="#FFDDDDDD" Thickness="1.5" />
+                </GeometryDrawing.Pen>
+            </GeometryDrawing> 
+        </DrawingGroup>
+        <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Padding" Value="{DynamicResource ListBoxItemPadding}" />
+            <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="PART_ContentPresenter"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
+                                CornerRadius="0"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Content="{TemplateBinding Content}"
+                                Padding="0"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+            </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+        <ControlTheme x:Key="InvisibleListBox" TargetType="ListBox">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ItemsPresenter Name="PART_ItemsPresenter"
+                            ItemsPanel="{TemplateBinding ItemsPanel}"
+                            Margin="{TemplateBinding Padding}"/>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+        <ControlTheme x:Key="InvisibleToggleButton" TargetType="ToggleButton">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ToggleButtonBorderBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="RenderTransform" Value="none" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:.075" />
+                </Transitions>
+            </Setter>
+
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter x:Name="PART_ContentPresenter"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    Padding="{TemplateBinding Padding}"
+                                    RecognizesAccessKey="True"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+        <ControlTheme x:Key="DirectoryExpander" TargetType="Expander">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DockPanel MinWidth="{TemplateBinding MinWidth}"
+                            MaxWidth="{TemplateBinding MaxWidth}">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="2,2,2,2">
+                            <Border MinWidth="20" MinHeight="20" Background="Transparent">
+					            <Image x:Name="PART_Icon" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ToggleButton x:Name="ExpanderHeader"
+                                        Margin="5,0,0,0"
+                                        Theme="{StaticResource InvisibleToggleButton}"
+                                        MinHeight="{TemplateBinding MinHeight}"
+                                        CornerRadius="{TemplateBinding CornerRadius}"
+                                        IsEnabled="{TemplateBinding IsEnabled}"
+                                        Content="{TemplateBinding Header}"
+                                        ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                        IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
+                        </StackPanel>
+                        <Border x:Name="ExpanderContent"
+                                IsVisible="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
+                                MinHeight="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                Padding="10,0,0,0">
+                            <ContentPresenter x:Name="PART_ContentPresenter"
+                                            Content="{TemplateBinding Content}"
+                                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                                            Foreground="{TemplateBinding Foreground}"
+                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter>
+            <Style Selector="^:expanded /template/ Image#PART_Icon">
+                <Setter Property="Source">
+                    <DrawingImage Drawing="{StaticResource OpenFolderIcon}" />
+                </Setter>
+            </Style>
+            <Style Selector="^:not(:expanded) /template/ Image#PART_Icon">
+                <Setter Property="Source">
+                    <DrawingImage Drawing="{StaticResource ClosedFolderIcon}" />
+                </Setter>
+            </Style>
+        </ControlTheme>
+    </Application.Resources>
+</Application>

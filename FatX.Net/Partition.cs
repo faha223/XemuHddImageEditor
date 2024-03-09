@@ -9,24 +9,24 @@ namespace FatX.Net
         public Partition(Stream stream, string driveLetter, long offset, long size)
         {
             DriveLetter = driveLetter;
-
             _filesystem = new Filesystem(stream, offset, size);
-
-            _filesystem.InitAsync(DriveLetter).Wait();
         }
 
         public async Task<Directory> GetRootDirectory()
         {
+            _filesystem.Init(DriveLetter);
             return await _filesystem.GetRootDirectory(DriveLetter);
         }
 
         public async Task<List<string>> Search(string query)
         {
+            _filesystem.Init(DriveLetter);
             return await Search(new PathMatcher(query));
         }
 
         internal async Task<List<string>> Search(PathMatcher matcher)
         {
+            _filesystem.Init(DriveLetter);
             return await _filesystem.Search(DriveLetter, matcher);
         }
     }

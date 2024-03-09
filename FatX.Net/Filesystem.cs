@@ -34,14 +34,20 @@ namespace FatX.Net
         
         #endregion Computed Properties
 
-        public async Task InitAsync(string DriveLetter)
+        public void Init(string DriveLetter)
         {
+            if(Initialized)
+                return;
+                
             DebugLog($"Initializing Partition {DriveLetter}");
 
-            _stream.Seek(Offset, SeekOrigin.Begin);
-            _superblock = await StructParser.ReadAsync<Superblock>(_stream);
-            if(_superblock.Signature != Constants.FATX_Signature)
-                throw new Exception("Invalid FATX Signature");
+            lock(_stream)
+            {
+                _stream.Seek(Offset, SeekOrigin.Begin);
+                _superblock = StructParser.Read<Superblock>(_stream);
+                if(_superblock.Signature != Constants.FATX_Signature)
+                    throw new Exception("Invalid FATX Signature");
+            }
 
             DebugLog("Signature Validated");
 
@@ -89,30 +95,33 @@ namespace FatX.Net
 
         private void ReadFatCache()
         {
-            _stream.Seek(FatOffset, SeekOrigin.Begin);
-            long numEntries = NumberOfClusters + Constants.FATX_FAT_ReservedEntriesCount;
-            
-            if(FatType == 16)
+            lock(_stream)
             {
-                byte[] buffer = new byte[numEntries * sizeof(ushort)];
-                _stream.Read(buffer, 0, buffer.Length);
-                for(int i = 0; i < numEntries; i++)
+                _stream.Seek(FatOffset, SeekOrigin.Begin);
+                long numEntries = NumberOfClusters + Constants.FATX_FAT_ReservedEntriesCount;
+                
+                if(FatType == 16)
                 {
-                    var entry = BitConverter.ToUInt16(buffer, i * sizeof(ushort));
-                    var entryAsUint = (uint)entry;
-                    if (entryAsUint >= 0x0000FFF0)
-                        entryAsUint |= 0xFFFF0000;
-                    FatCache.Add(entryAsUint);
+                    byte[] buffer = new byte[numEntries * sizeof(ushort)];
+                    _stream.Read(buffer, 0, buffer.Length);
+                    for(int i = 0; i < numEntries; i++)
+                    {
+                        var entry = BitConverter.ToUInt16(buffer, i * sizeof(ushort));
+                        var entryAsUint = (uint)entry;
+                        if (entryAsUint >= 0x0000FFF0)
+                            entryAsUint |= 0xFFFF0000;
+                        FatCache.Add(entryAsUint);
+                    }
                 }
-            }
-            else
-            {
-                byte[] buffer = new byte[numEntries * sizeof(uint)];
-                _stream.Read(buffer, 0, buffer.Length);
-                for(int i = 0; i < numEntries; i++)
+                else
                 {
-                    var entry = BitConverter.ToUInt32(buffer, i * sizeof(uint));
-                    FatCache.Add(entry);
+                    byte[] buffer = new byte[numEntries * sizeof(uint)];
+                    _stream.Read(buffer, 0, buffer.Length);
+                    for(int i = 0; i < numEntries; i++)
+                    {
+                        var entry = BitConverter.ToUInt32(buffer, i * sizeof(uint));
+                        FatCache.Add(entry);
+                    }
                 }
             }
         }
@@ -128,11 +137,12 @@ namespace FatX.Net
         private Directory? rootDirectory = null;
         public Task<Directory> GetRootDirectory(string DriveLetter)
         {
-            if(!Initialized)
-                throw new InvalidOperationException("Filesystem Not Initialized!");
-
             if(rootDirectory == null)
+            {
+                if(!Initialized)
+                    Init(DriveLetter);
                 rootDirectory = new Directory(null, this, DriveLetter, Constants.FATX_FAT_ReservedEntriesCount);
+            }
             return Task.FromResult(rootDirectory);
         }
 
