@@ -8,7 +8,7 @@
 	<UserControl.DataTemplates>
 		<DataTemplate DataType="vm:FileViewModel">
 			<StackPanel Orientation="Horizontal" Margin="2,2,2,2">
-				<Border MinWidth="20" MinHeight="20" Background="Transparent">
+				<Border Width="20" Height="20" Background="Transparent">
 					<Image HorizontalAlignment="Center" VerticalAlignment="Center">
 						<Image.Source>
 							<DrawingImage Drawing="{StaticResource FileIcon}" />
@@ -41,5 +41,5 @@
 		<vm:DirectoryTreeViewModel/>
 	</Design.DataContext>
 	
-	<ListBox ItemsSource="{Binding Subdirectories}" Margin="0,0,0,0" />
+	<ListBox Theme="{StaticResource InvisibleListBox}" ItemsSource="{Binding Subdirectories}" Margin="0,0,0,0" />
 </UserControl>

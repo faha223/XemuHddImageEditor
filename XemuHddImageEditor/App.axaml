@@ -22,6 +22,13 @@
                 </GeometryDrawing.Pen>
             </GeometryDrawing>
 		</DrawingGroup>
+		<DrawingGroup x:Key="ClosedFolderIconLarge">
+			<GeometryDrawing Geometry="m 0,14 L 1,13 L 2,3 L 17,3 L 17,13 L 16,14 L 0,14 L 0,1.5 L 2,1.5 L 4,0 L 7,0 L 9,1.5 L 16,1.5 L 16,4">
+				<GeometryDrawing.Pen>
+					<Pen Brush="#FFDDDDDD" Thickness="0.5" />
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+		</DrawingGroup>
         <DrawingGroup x:Key="FileIcon">
             <GeometryDrawing Geometry="m 7,0 L 7,5 L 12,5 L 12,18 L 0,18 L 0,0 L 7,0 L 12,5 M 2,6 L 10,6 M 2,9 L 10,9 M 2,12 L 10,12 M 2,15 L 10,15">
                 <GeometryDrawing.Pen>
@@ -29,6 +36,13 @@
                 </GeometryDrawing.Pen>
             </GeometryDrawing> 
         </DrawingGroup>
+		<DrawingGroup x:Key="FileIconLarge">
+			<GeometryDrawing Geometry="m 7,0 L 7,5 L 12,5 L 12,18 L 0,18 L 0,0 L 7,0 L 12,5 M 2,6 L 10,6 M 2,9 L 10,9 M 2,12 L 10,12 M 2,15 L 10,15">
+				<GeometryDrawing.Pen>
+					<Pen Brush="#FFDDDDDD" Thickness="0.5" />
+				</GeometryDrawing.Pen>
+			</GeometryDrawing>
+		</DrawingGroup>
         <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="{DynamicResource ListBoxItemPadding}" />
@@ -95,7 +109,7 @@
                     <DockPanel MinWidth="{TemplateBinding MinWidth}"
                             MaxWidth="{TemplateBinding MaxWidth}">
                         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="2,2,2,2">
-                            <Border MinWidth="20" MinHeight="20" Background="Transparent">
+                            <Border Width="20" Height="20" Background="Transparent">
 					            <Image x:Name="PART_Icon" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <ToggleButton x:Name="ExpanderHeader"
