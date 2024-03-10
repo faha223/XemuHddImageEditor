@@ -58,10 +58,10 @@
 			</DockPanel>
 			</StackPanel>
 		</Border>
-		<Border Grid.Row="2" Grid.Column="0" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2">
+		<Border Grid.Row="2" Grid.Column="0" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2" Background="#FF161616">
 			<views:DirectoryTree DataContext="{Binding DirectoryTreeVM}" />
 		</Border>
-		<Border Grid.Row="2" Grid.Column="1" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2">
+		<Border Grid.Row="2" Grid.Column="1" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2" Background="#FF161616">
 			<views:Directory DataContext="{Binding SelectedDirectory}" />
 		</Border>
 	</Grid>
