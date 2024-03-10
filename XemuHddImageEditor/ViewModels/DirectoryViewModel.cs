@@ -33,6 +33,17 @@ public class DirectoryViewModel(Directory directory)
         }
     }
 
+    public List<object> Contents
+    {
+        get
+        {
+            var list = new List<object>();
+            list.AddRange(Subdirectories);
+            list.AddRange(Files);
+            return list;
+        }
+    }
+
     public bool ShowFiles{ get; set; } = true;
 
     public void Extract()

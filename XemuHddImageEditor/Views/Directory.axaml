@@ -1,0 +1,41 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XemuHddImageEditor.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="XemuHddImageEditor.Views.Directory">
+	<UserControl.DataTemplates>
+		<DataTemplate DataType="vm:FileViewModel">
+			<StackPanel Orientation="Horizontal" Margin="2,2,2,2">
+				<Border MinWidth="20" MinHeight="20" Background="Transparent">
+					<Image HorizontalAlignment="Center" VerticalAlignment="Center">
+						<Image.Source>
+							<DrawingImage Drawing="{StaticResource FileIcon}" />
+						</Image.Source>
+					</Image>
+				</Border>
+				<TextBlock Text="{Binding Name}">
+					<TextBlock.ContextMenu>
+						<ContextMenu>
+							<MenuItem Header="Extract" Command="{Binding Extract}" />
+						</ContextMenu>
+					</TextBlock.ContextMenu>
+				</TextBlock>
+			</StackPanel>
+		</DataTemplate>
+		<DataTemplate DataType="vm:DirectoryViewModel">
+			<Expander Theme="{StaticResource DirectoryExpander}" HorizontalAlignment="Stretch" Header="{Binding Name}">
+				<StackPanel>
+					<ListBox Theme="{StaticResource InvisibleListBox}" ItemsSource="{Binding Subdirectories}" />
+					<ListBox Theme="{StaticResource InvisibleListBox}" ItemsSource="{Binding Files}" />
+				</StackPanel>
+			</Expander>
+		</DataTemplate>
+	</UserControl.DataTemplates>
+
+	<!--We are using Compiled bindings. This is not mandatory but makes life easier. Read more about it here:-->
+	<!-- https://docs.avaloniaui.net/docs/basics/data/data-binding/compiled-bindings -->
+
+	<ListBox ItemsSource="{Binding Contents}" Margin="0,0,0,0" />
+</UserControl>

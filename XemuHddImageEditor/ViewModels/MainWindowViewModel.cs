@@ -1,26 +1,46 @@
 using FatX.Net;
-using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace XemuHddImageEditor.ViewModels;
 
 public class MainWindowViewModel
 {
-    public List<DirectoryViewModel> Subdirectories { get; init; }
+    public DirectoryTreeViewModel DirectoryTreeVM { get; } = new();
+
+    public DirectoryViewModel? SelectedDirectory { get; set; } = null;
 
     public MainWindowViewModel()
     {
-        var img = new DiskImage("/home/fred/Xemu/HDD/xemu_hdd_tool_test.raw");
-        var list = new List<DirectoryViewModel>(img.Partitions.Count);
-        foreach(var partition in img.Partitions)
-        {
-            var vm = GetDirectoryViewModel(partition);
-            list.Add(vm);
-        }
-        Subdirectories = list;
+        var imgPath = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+            "C:\\Users\\speci\\AppData\\Roaming\\xemu\\xemu\\HDD\\xemu_hdd_tool_test.raw" :
+            "/home/fred/Xemu/HDD/xemu_hdd_tool_test.raw";
+
+        DirectoryTreeVM.SelectedDirectoryChanged += DirectoryTreeVM_SelectedDirectoryChanged;
+        DirectoryTreeVM.LoadImage(imgPath);
+
+        DirectoryTreeVM.SelectedDirectory = "C";
     }
 
-    private static DirectoryViewModel GetDirectoryViewModel(Partition partition)
+    private DirectoryViewModel? GetDirectoryViewModel(List<DirectoryViewModel> directories, string name)
     {
-        return new DirectoryViewModel(partition.GetRootDirectory().Result);
+        foreach (var dir in directories)
+        {
+            if (dir.Name == name)
+            {
+                return dir;
+            }
+            else if (name.StartsWith(dir.Name))
+            {
+                return GetDirectoryViewModel(dir.Subdirectories, name);
+            }
+        }
+
+        return null;
+    }
+
+    private void DirectoryTreeVM_SelectedDirectoryChanged(object? sender, string newValue)
+    {
+        // IDK
+        SelectedDirectory = GetDirectoryViewModel(DirectoryTreeVM.Subdirectories, newValue);
     }
 }
