@@ -36,25 +36,23 @@
         </DataTemplate>
     </Window.DataTemplates>
 
-	<!--We are using Compiled bindings. This is not mandatory but makes life easier. Read more about it here:-->
-	<!-- https://docs.avaloniaui.net/docs/basics/data/data-binding/compiled-bindings -->
-
 	<Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 	<Grid RowDefinitions="auto,120,*" ColumnDefinitions="240,*">
 		<Menu Grid.Row="0" Grid.ColumnSpan="2">
 			<MenuItem Header="_File">
-				<MenuItem Header="_Load Image" />
+				<MenuItem Header="_Load Image" Command="{Binding LoadImage}" />
 				<Separator />
 				<MenuItem Header="_Exit" />
 			</MenuItem>
 		</Menu>
-		<Border Grid.Row="1" Grid.ColumnSpan="2" Background="#161616" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2">
+		<Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="#161616" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2">
 			<StackPanel>
 			<DockPanel>
-				<TextBlock Text="Directory" DockPanel.Dock="Left" VerticalAlignment="Center" Margin="5" />
-				<TextBox Text="{Binding DirectoryTreeVM.SelectedDirectory}" Margin="0,5,5,5" />
+				<Button Margin="5" DockPanel.Dock="Left" IsEnabled="{Binding CanGoUp}" Command="{Binding GoToParentDirectory}">Go Up</Button>
+				<TextBlock Text="Directory" DockPanel.Dock="Left" VerticalAlignment="Center" />
+				<TextBox Text="{Binding SelectedDirectoryPath}" Margin="5" />
 			</DockPanel>
 			</StackPanel>
 		</Border>

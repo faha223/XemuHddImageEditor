@@ -36,7 +36,7 @@ namespace FatX.Net
             foreach(var partition in Partitions)
             {
                 var root = await partition.GetRootDirectory();
-                await root.Extract(targetDirectory);
+                await root.Extract(targetDirectory, true);
             }
         }
 
@@ -45,7 +45,7 @@ namespace FatX.Net
             foreach(var partition in Partitions)
             {
                 var root = await partition.GetRootDirectory();
-                await root.Extract(targetDirectory);
+                await root.Extract(targetDirectory, true);
             }
         }
 

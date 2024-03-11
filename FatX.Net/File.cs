@@ -63,10 +63,15 @@ namespace FatX.Net
             return totalBytesRead;
         }
 
-        public async Task Extract(string dest)
+        public async Task ExtractToDirectory(string dest)
         {
             dest = Path.Combine(dest, Name);
-            using var outStream = new FileStream(dest, FileMode.Create);
+            await Extract(dest);
+        }
+
+        public async Task Extract(string filename)
+        {
+            using var outStream = new FileStream(filename, FileMode.Create);
 
             long totalBytesRead = 0;
             var cluster = _filesystem.GetCluster(_firstCluster);

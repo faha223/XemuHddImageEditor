@@ -18,6 +18,7 @@
 				<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" MaxWidth="100" TextWrapping="Wrap">
 					<TextBlock.ContextMenu>
 						<ContextMenu>
+							<MenuItem Header="Rename" Command="{Binding Rename}" />
 							<MenuItem Header="Extract" Command="{Binding Extract}" />
 						</ContextMenu>
 					</TextBlock.ContextMenu>
@@ -36,6 +37,8 @@
 				<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Width="100" TextWrapping="Wrap" TextAlignment="Center">
 					<TextBlock.ContextMenu>
 						<ContextMenu>
+							<MenuItem Header="Open" Command="{Binding Open}" />
+							<MenuItem Header="Rename" Command="{Binding Rename}" />
 							<MenuItem Header="Extract" Command="{Binding Extract}" />
 						</ContextMenu>
 					</TextBlock.ContextMenu>
@@ -47,5 +50,12 @@
 	<!--We are using Compiled bindings. This is not mandatory but makes life easier. Read more about it here:-->
 	<!-- https://docs.avaloniaui.net/docs/basics/data/data-binding/compiled-bindings -->
 
-	<ListBox Theme="{StaticResource InvisibleListBox}"  ItemsSource="{Binding Contents}" Margin="0,0,0,0" />
+	<ListBox Theme="{StaticResource FlowLayoutListBox}" ItemsSource="{Binding Contents}" Margin="0,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+		<ListBox.ContextMenu>
+			<ContextMenu>
+				<MenuItem Header="New Folder" Command="{Binding CreateDirectory}" />
+				<MenuItem Header="Import Files" Command="{Binding ImportFiles}" />
+			</ContextMenu>
+		</ListBox.ContextMenu>
+	</ListBox>
 </UserControl>

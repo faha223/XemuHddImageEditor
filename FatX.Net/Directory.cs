@@ -96,16 +96,18 @@ namespace FatX.Net
                 await subdir.PrintTree();
         }
 
-        public async Task Extract(string dest)
+        public async Task Extract(string dest, bool recursive)
         {
             dest = Path.Combine(dest, Name);
 
             CreateDirectory(dest);
-            
-            foreach(var file in Files)
-                await file.Extract(dest);
-            foreach(var subdir in Subdirectories)
-                await subdir.Extract(dest);
+            if (recursive)
+            {
+                foreach (var file in Files)
+                    await file.ExtractToDirectory(dest);
+                foreach (var subdirectory in Subdirectories)
+                    await subdirectory.Extract(dest, recursive);
+            }
         }
 
         private void CreateDirectory(string name)

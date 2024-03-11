@@ -1,0 +1,31 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XemuHddImageEditor.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:views="using:XemuHddImageEditor.Views"
+        SizeToContent="WidthAndHeight"
+        mc:Ignorable="d"
+        x:Class="XemuHddImageEditor.Views.RenameFileModal"
+        WindowStartupLocation="CenterScreen"
+        Title="Rename">
+    <Grid RowDefinitions="auto,*" Background="#FF161616">
+        <StackPanel Margin="5">
+            <DockPanel>
+                <TextBlock Text="Current Filename: " DockPanel.Dock="Left" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Filename}" />
+            </DockPanel>
+            <DockPanel Margin="0,5">
+                <TextBlock Text="New Filename: " DockPanel.Dock="Left" VerticalAlignment="Center" />
+                <TextBox Text="{Binding NewFilename}" Width="360" />
+            </DockPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,25,0,0" HorizontalAlignment="Right">
+                <Button Command="{Binding CancelButtonCommand}" Width="80">Cancel</Button>
+                <Button Margin="5,0,0,0" Command="{Binding OkButtonCommand}" Width="80">OK</Button>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+    <Design.DataContext>
+        <vm:RenameFileModalViewModel />
+    </Design.DataContext>
+</Window>

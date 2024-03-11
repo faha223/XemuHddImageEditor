@@ -1,22 +1,25 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using Directory = FatX.Net.Directory;
-using File = FatX.Net.File;
-using FatX.Net;
+using XemuHddImageEditor.Helpers;
 
 namespace XemuHddImageEditor.ViewModels;
 
-public class DirectoryViewModel(Directory directory)
+public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentDirectory) : ViewModelBase
 {
     private Directory _directory = directory;
-
+    public DirectoryViewModel? ParentDirectory { get; init; } = parentDirectory;
     public string Name => _directory.Name;
+    public string FullName => _directory.FullName;
 
     private List<DirectoryViewModel>? _subdirectories;
     public List<DirectoryViewModel> Subdirectories
     {
         get
         {
-            if(_subdirectories == null)
-                _subdirectories = _directory.Subdirectories.Select(d => new DirectoryViewModel(d)).ToList();
+            _subdirectories ??= _directory.Subdirectories
+                .Select(d => new DirectoryViewModel(d, this))
+                .ToList();
 
             return _subdirectories;
         }
@@ -27,8 +30,9 @@ public class DirectoryViewModel(Directory directory)
     {
         get
         {
-            if(_files == null)
-                _files = _directory.Files.Select(f => new FileViewModel(f)).ToList();
+            _files ??= _directory.Files
+                .Select(f => new FileViewModel(f, this))
+                .ToList();
             return _files;
         }
     }
@@ -44,10 +48,63 @@ public class DirectoryViewModel(Directory directory)
         }
     }
 
-    public bool ShowFiles{ get; set; } = true;
-
-    public void Extract()
+    private bool _expanded = false;
+    public bool Expanded
     {
-        // TODO: Implement this
+        get => _expanded;
+        set
+        {
+            if (value && ParentDirectory != null)
+                ParentDirectory.Expanded = value;
+            _expanded = value;
+            OnPropertyChanged(nameof(Expanded));
+        }
+    }
+
+    public Task Open()
+    {
+        if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            if (desktop.MainWindow.DataContext is MainWindowViewModel mainWindowVm)
+            {
+                mainWindowVm.SelectedDirectory = this;
+            }
+        }
+
+        Expanded = true;
+        return Task.CompletedTask;
+    }
+    
+    public Task Rename()
+    {
+        // var dialog = new RenameFileModal()
+        // {
+        //     ViewModel = new RenameFileModalViewModel(this)
+        // };
+        //
+        // await DialogHelpers.ShowDialog<RenameFileModalViewModel?>(dialog);
+        //
+        // if (dialog.ViewModel.DialogResult)
+        //     Name = dialog.ViewModel.NewFilename;
+        return Task.CompletedTask;
+    }
+    
+    public async Task Extract()
+    {
+        var destination = await DialogHelpers.OpenFolderDialog();
+        if (destination != null)
+            await _directory.Extract(destination, true);
+    }
+
+    public async Task ImportFiles()
+    {
+        var result = await DialogHelpers.OpenFilesDialog();
+        if (result != null)
+        {
+            foreach (var item in result)
+            {
+                // TODO: Import the Files
+            }
+        }
     }
 }
