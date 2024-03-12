@@ -3,53 +3,51 @@
         xmlns:vm="using:XemuHddImageEditor.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d"
         x:Class="XemuHddImageEditor.Views.Directory">
 	<UserControl.DataTemplates>
 		<DataTemplate DataType="vm:FileViewModel">
-			<StackPanel Margin="5">
-				<Border Width="64" Height="64" Background="Transparent">
-					<Image HorizontalAlignment="Center" VerticalAlignment="Center">
-						<Image.Source>
-							<DrawingImage Drawing="{StaticResource FileIconLarge}" />
-						</Image.Source>
-					</Image>
-				</Border>
-				<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" MaxWidth="100" TextWrapping="Wrap">
-					<TextBlock.ContextMenu>
-						<ContextMenu>
-							<MenuItem Header="Rename" Command="{Binding Rename}" />
-							<MenuItem Header="Extract" Command="{Binding Extract}" />
-						</ContextMenu>
-					</TextBlock.ContextMenu>
-				</TextBlock>
-			</StackPanel>
+			<Border>
+				<Border.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Rename" Command="{Binding Rename}" />
+						<MenuItem Header="Extract" Command="{Binding Extract}" />
+					</ContextMenu>
+				</Border.ContextMenu>
+				<StackPanel Margin="5">
+					<Border Width="64" Height="64" Background="Transparent">
+						<Image HorizontalAlignment="Center" VerticalAlignment="Center">
+							<Image.Source>
+								<DrawingImage Drawing="{StaticResource FileIconLarge}" />
+							</Image.Source>
+						</Image>
+					</Border>
+					<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" MaxWidth="100" TextWrapping="Wrap" />
+				</StackPanel>
+			</Border>
 		</DataTemplate>
 		<DataTemplate DataType="vm:DirectoryViewModel">
-			<StackPanel Margin="5">
-				<Border Width="64" Height="64" Background="Transparent">
-					<Image HorizontalAlignment="Center" VerticalAlignment="Center">
-						<Image.Source>
-							<DrawingImage Drawing="{StaticResource ClosedFolderIconLarge}" />
-						</Image.Source>
-					</Image>
-				</Border>
-				<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Width="100" TextWrapping="Wrap" TextAlignment="Center">
-					<TextBlock.ContextMenu>
-						<ContextMenu>
-							<MenuItem Header="Open" Command="{Binding Open}" />
-							<MenuItem Header="Rename" Command="{Binding Rename}" />
-							<MenuItem Header="Extract" Command="{Binding Extract}" />
-						</ContextMenu>
-					</TextBlock.ContextMenu>
-				</TextBlock>
-			</StackPanel>
+			<Border Background="Transparent">
+				<Border.ContextMenu>
+					<ContextMenu>
+						<MenuItem Header="Open" Command="{Binding Open}" />
+						<MenuItem Header="Rename" Command="{Binding Rename}" />
+						<MenuItem Header="Extract" Command="{Binding Extract}" />
+					</ContextMenu>
+				</Border.ContextMenu>
+				<StackPanel Margin="5">
+					<Border Width="64" Height="64" Background="Transparent">
+						<Image HorizontalAlignment="Center" VerticalAlignment="Center">
+							<Image.Source>
+								<DrawingImage Drawing="{StaticResource ClosedFolderIconLarge}" />
+							</Image.Source>
+						</Image>
+					</Border>
+					<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Width="100" TextWrapping="Wrap" TextAlignment="Center" />
+				</StackPanel>
+			</Border>
 		</DataTemplate>
 	</UserControl.DataTemplates>
-
-	<!--We are using Compiled bindings. This is not mandatory but makes life easier. Read more about it here:-->
-	<!-- https://docs.avaloniaui.net/docs/basics/data/data-binding/compiled-bindings -->
-
 	<ListBox Theme="{StaticResource FlowLayoutListBox}" ItemsSource="{Binding Contents}" Margin="0,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
 		<ListBox.ContextMenu>
 			<ContextMenu>

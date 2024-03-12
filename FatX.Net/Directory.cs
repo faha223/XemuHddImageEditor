@@ -1,20 +1,19 @@
 using FatX.Net.Enums;
+using FatX.Net.Interfaces;
 using FatX.Net.Structures;
 using InteropHelpers;
-using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace FatX.Net
 {
-    public class Directory
+    public class Directory : IFileSystemEntry
     {
         private object _initLock = new();
         private bool Initialized = false;
         public Directory? Parent { get; private set; } = null;
         private Filesystem _filesystem;
-        public string Name { get; }
+        public string Name { get; set;  }
 
         public string FullName => (Parent == null) ? $"{Name}:" : Parent.FullName + Path.DirectorySeparatorChar + Name;
 
@@ -95,6 +94,8 @@ namespace FatX.Net
             foreach(var subdir in Subdirectories)
                 await subdir.PrintTree();
         }
+
+        public async Task Extract(string destination) => await Extract(destination, false);
 
         public async Task Extract(string dest, bool recursive)
         {

@@ -3,10 +3,10 @@ using ReactiveUI;
 
 namespace XemuHddImageEditor.ViewModels;
 
-public class RenameFileModalViewModel(FileViewModel file)
+public class RenameFileModalViewModel(IFileSystemEntry file)
 {
     public event EventHandler? CloseRequested;
-    private readonly FileViewModel _file = file;
+    private readonly IFileSystemEntry _file = file;
     public string FullName => _file.FullName;
     public string Filename => _file.Name;
 
@@ -18,7 +18,6 @@ public class RenameFileModalViewModel(FileViewModel file)
 
     private void SaveAndClose()
     {
-        Console.WriteLine("Save and Close Called");
         DialogResult = true;
         CloseRequested?.Invoke(this, EventArgs.Empty);
     }
@@ -27,7 +26,6 @@ public class RenameFileModalViewModel(FileViewModel file)
 
     private void CloseWithoutSaving()
     {
-        Console.WriteLine("Close Without Saving Called");
         DialogResult = false;
         CloseRequested?.Invoke(this, EventArgs.Empty);
     }

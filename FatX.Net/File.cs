@@ -1,8 +1,9 @@
+using FatX.Net.Interfaces;
 using System.IO;
 
 namespace FatX.Net
 {
-    public class File
+    public class File : IFileSystemEntry
     {
         private Filesystem _filesystem;
 
@@ -63,10 +64,10 @@ namespace FatX.Net
             return totalBytesRead;
         }
 
-        public async Task ExtractToDirectory(string dest)
+        public async Task ExtractToDirectory(string destination)
         {
-            dest = Path.Combine(dest, Name);
-            await Extract(dest);
+            destination = Path.Combine(destination, Name);
+            await Extract(destination);
         }
 
         public async Task Extract(string filename)

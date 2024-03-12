@@ -4,7 +4,7 @@ using XemuHddImageEditor.Helpers;
 
 namespace XemuHddImageEditor.ViewModels;
 
-public class FileViewModel(File file, DirectoryViewModel parentDirectory) : ViewModelBase
+public class FileViewModel(File file, DirectoryViewModel parentDirectory) : ViewModelBase, IFileSystemEntry
 {
     public DirectoryViewModel ParentDirectory { get; init; } = parentDirectory;
     

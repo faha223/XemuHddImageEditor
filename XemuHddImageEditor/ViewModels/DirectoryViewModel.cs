@@ -2,14 +2,25 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Directory = FatX.Net.Directory;
 using XemuHddImageEditor.Helpers;
+using XemuHddImageEditor.Views;
+using System.Reflection.Metadata;
 
 namespace XemuHddImageEditor.ViewModels;
 
-public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentDirectory) : ViewModelBase
+public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentDirectory) : ViewModelBase, IFileSystemEntry
 {
     private Directory _directory = directory;
     public DirectoryViewModel? ParentDirectory { get; init; } = parentDirectory;
-    public string Name => _directory.Name;
+    public string Name
+    {
+        get => _directory.Name;
+        set 
+        { 
+            _directory.Name = value;
+            OnPropertyChanged(nameof(Name));
+            OnPropertyChanged(nameof(FullName));
+        }
+    }
     public string FullName => _directory.FullName;
 
     private List<DirectoryViewModel>? _subdirectories;
@@ -37,11 +48,11 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
         }
     }
 
-    public List<object> Contents
+    public List<IFileSystemEntry> Contents
     {
         get
         {
-            var list = new List<object>();
+            var list = new List<IFileSystemEntry>();
             list.AddRange(Subdirectories);
             list.AddRange(Files);
             return list;
@@ -63,9 +74,9 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
 
     public Task Open()
     {
-        if (Application.Current.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            if (desktop.MainWindow.DataContext is MainWindowViewModel mainWindowVm)
+            if (desktop.MainWindow?.DataContext is MainWindowViewModel mainWindowVm)
             {
                 mainWindowVm.SelectedDirectory = this;
             }
@@ -75,25 +86,44 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
         return Task.CompletedTask;
     }
     
-    public Task Rename()
+    public async Task Rename()
     {
-        // var dialog = new RenameFileModal()
-        // {
-        //     ViewModel = new RenameFileModalViewModel(this)
-        // };
-        //
-        // await DialogHelpers.ShowDialog<RenameFileModalViewModel?>(dialog);
-        //
-        // if (dialog.ViewModel.DialogResult)
-        //     Name = dialog.ViewModel.NewFilename;
-        return Task.CompletedTask;
+        var dialog = new RenameFileModal()
+        {
+            ViewModel = new RenameFileModalViewModel(this)
+        };
+
+        await DialogHelpers.ShowDialog<RenameFileModalViewModel?>(dialog);
+
+        if (dialog.ViewModel.DialogResult)
+            Name = dialog.ViewModel.NewFilename;
     }
     
     public async Task Extract()
     {
         var destination = await DialogHelpers.OpenFolderDialog();
         if (destination != null)
-            await _directory.Extract(destination, true);
+        {
+            Dictionary<string, Action> tasks = new Dictionary<string, Action>();
+            GetExtractTasks(destination, _directory, tasks);
+
+            var dlg = new ProgressTrackerDialog(tasks);
+            await DialogHelpers.ShowDialog<ProgressTrackerViewModel?>(dlg);
+        }
+    }
+
+    public void GetExtractTasks(string destination, Directory directory, Dictionary<string, Action> tasks)
+    {
+        tasks.Add("Extracting " + directory.FullName, async () => { await directory.Extract(destination); });
+        var nextDestination = Path.Combine(destination, directory.Name);
+        foreach(var file in directory.Files)
+        {
+            tasks.Add("Extracting " + file.FullName, async () => { await file.ExtractToDirectory(nextDestination); });
+        }
+        foreach(var subdirectory in directory.Subdirectories)
+        {
+            GetExtractTasks(nextDestination, subdirectory, tasks);
+        }
     }
 
     public async Task ImportFiles()

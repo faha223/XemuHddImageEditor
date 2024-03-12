@@ -1,7 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using Avalonia.Controls;
-using Avalonia.Interactivity;
-using DynamicData;
 using FatX.Net;
 
 namespace XemuHddImageEditor.ViewModels
@@ -50,7 +47,6 @@ namespace XemuHddImageEditor.ViewModels
             _img = new DiskImage(imgPath);
             foreach(var dir in _img.Partitions.Select(GetDirectoryViewModel))
                 Subdirectories.Add(dir);
-            //OnPropertyChanged(nameof(Subdirectories));
             
             if(Subdirectories.Count > 0)
                 SelectedDirectoryPath = Subdirectories[0].FullName;

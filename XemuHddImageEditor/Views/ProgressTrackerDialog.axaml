@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:XemuHddImageEditor.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:views="using:XemuHddImageEditor.Views"
+        SizeToContent="WidthAndHeight"
+        mc:Ignorable="d"
+        x:Class="XemuHddImageEditor.Views.ProgressTrackerDialog"
+        WindowStartupLocation="CenterScreen"
+        Title="Working">
+	<Grid Background="#FF161616">
+		<Border Padding="20">
+			<StackPanel>
+				<TextBlock Text="{Binding CurrentTask}" TextWrapping="NoWrap" />
+				<ProgressBar Grid.Row="1" Maximum="{Binding Tasks.Count}" Value="{Binding NumTasksCompleted}" Height="8" IsIndeterminate="False" Width="640" Foreground="Green" />
+			</StackPanel>
+		</Border>
+	</Grid>
+	<Design.DataContext>
+		<vm:ProgressTrackerViewModel />
+	</Design.DataContext>
+</Window>
