@@ -27,7 +27,7 @@ public partial class RenameFileModal : Window
         InitializeComponent();
     }
 
-    private void vm_CloseRequested(object sender, EventArgs e)
+    private void vm_CloseRequested(object? sender, EventArgs e)
     {
         Close();
     }

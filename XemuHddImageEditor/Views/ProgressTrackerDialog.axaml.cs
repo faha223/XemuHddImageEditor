@@ -7,6 +7,11 @@ namespace XemuHddImageEditor.Views
     public partial class ProgressTrackerDialog : Window
     {
         public ProgressTrackerViewModel ViewModel;
+
+        public ProgressTrackerDialog() : this(new Dictionary<string, Action>())
+        {
+        }
+        
         public ProgressTrackerDialog(Dictionary<string, Action> tasks)
         {
             InitializeComponent();
