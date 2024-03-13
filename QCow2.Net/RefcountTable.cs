@@ -21,7 +21,7 @@ namespace QCow2.Net
             source.Seek((long)fileHeader.RefcountTableOffset, SeekOrigin.Begin);
             for(int i = 0; i < refcountBlockEntries; i++)
             {
-                var entry = StructParser.Read<RefcountTableEntry>(source, true);
+                var entry = source.Read<RefcountTableEntry>(true);
                 Entries.Add(entry);
             }
 

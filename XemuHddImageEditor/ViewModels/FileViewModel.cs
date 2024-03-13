@@ -45,4 +45,14 @@ public class FileViewModel(File file, DirectoryViewModel parentDirectory) : View
         if (vm.DialogResult)
             Name = vm.NewFilename;
     }
+
+    public async Task Delete()
+    {
+        await ParentDirectory.DeleteFile(this);
+    }
+
+    internal async Task InternalDelete()
+    {
+        await _file.Delete();
+    }
 }

@@ -1,3 +1,6 @@
+using FatX.Net.Helpers;
+using System.Diagnostics;
+
 namespace FatX.Net
 {
     public class DiskImage
@@ -18,17 +21,17 @@ namespace FatX.Net
         private void Load(Stream stream)
         {
             // FATX Drives don't have a Master Boot Record, so no point in looking for one
-            Console.WriteLine("Loading Partition C");
+            Logger.Verbose("Loading Partition C");
             Partitions.Add(new Partition(stream, "C", Constants.CPartitionOffset, Constants.CPartitionSize));
-            Console.WriteLine("Loading Partition E");
+            Logger.Verbose("Loading Partition E");
             Partitions.Add(new Partition(stream, "E", Constants.EPartitionOffset, Constants.EPartitionSize));
-            Console.WriteLine("Loading Partition X");
+            Logger.Verbose("Loading Partition X");
             Partitions.Add(new Partition(stream, "X", Constants.XPartitionOffset, Constants.XPartitionSize));
-            Console.WriteLine("Loading Partition Y");
+            Logger.Verbose("Loading Partition Y");
             Partitions.Add(new Partition(stream, "Y", Constants.YPartitionOffset, Constants.YPartitionSize));
-            Console.WriteLine("Loading Partition Z");
+            Logger.Verbose("Loading Partition Z");
             Partitions.Add(new Partition(stream, "Z", Constants.ZPartitionOffset, Constants.ZPartitionSize));
-            Console.WriteLine("Partitions Loaded");
+            Logger.Verbose("Partitions Loaded");
         }
     
         public async Task Extract(string targetDirectory)

@@ -1,5 +1,4 @@
-using FatX.Net;
-using System.Runtime.InteropServices;
+using Avalonia.Controls.ApplicationLifetimes;
 using XemuHddImageEditor.Helpers;
 
 namespace XemuHddImageEditor.ViewModels;
@@ -48,6 +47,14 @@ public class MainWindowViewModel : ViewModelBase
         {
             DirectoryTreeVM.LoadImage(result);
             OnPropertyChanged(nameof(DirectoryTreeVM));
+        }
+    }
+
+    public void Close()
+    {
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.MainWindow?.Close();
         }
     }
 }

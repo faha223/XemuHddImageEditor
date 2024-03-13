@@ -9,8 +9,8 @@ namespace FatX.Net.Structures
         public DirectoryEntryStatus Status;
         public byte                 Attributes;
 
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst=Constants.FATX_MaxFilenameLen)]
-        public string               Filename;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst=Constants.FATX_MaxFilenameLen)]
+        public byte[]               Filename;
         public uint                 FirstCluster;
         public uint                 FileSize;
         public ushort               ModifiedTime;

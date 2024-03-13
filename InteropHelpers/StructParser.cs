@@ -6,7 +6,7 @@ namespace InteropHelpers
     {
         public static T Read<T>(this Stream stream, bool isBigEndian = false) where T: struct
         {
-            Span<byte> bytes = new Span<byte>(new byte[Marshal.SizeOf(typeof(T))]);
+            Span<byte> bytes = new(new byte[Marshal.SizeOf(typeof(T))]);
             stream.ReadExactly(bytes);
             
             return Cast<T>(bytes, isBigEndian);
@@ -18,6 +18,17 @@ namespace InteropHelpers
             await stream.ReadExactlyAsync(bytes);
 
             return Cast<T>(bytes, isBigEndian);
+        }
+
+        public static void Write<T>(this Stream stream, T structure) where T: struct
+        {
+            var bytes = new byte[Marshal.SizeOf(typeof(T))];
+            GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+            Marshal.StructureToPtr(structure, handle.AddrOfPinnedObject()!, false);
+
+            stream.Write(bytes, 0, bytes.Length);
+
+            handle.Free();
         }
 
         public static T Cast<T>(Span<byte> bytes, bool isBigEndian = false) where T: struct

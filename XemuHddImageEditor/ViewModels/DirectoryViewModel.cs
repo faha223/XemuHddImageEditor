@@ -3,7 +3,6 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Directory = FatX.Net.Directory;
 using XemuHddImageEditor.Helpers;
 using XemuHddImageEditor.Views;
-using System.Reflection.Metadata;
 
 namespace XemuHddImageEditor.ViewModels;
 
@@ -104,12 +103,49 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
         var destination = await DialogHelpers.OpenFolderDialog();
         if (destination != null)
         {
-            Dictionary<string, Action> tasks = new Dictionary<string, Action>();
+            Dictionary<string, Action> tasks = [];
             GetExtractTasks(destination, _directory, tasks);
 
             var dlg = new ProgressTrackerDialog(tasks);
             await DialogHelpers.ShowDialog<ProgressTrackerViewModel?>(dlg);
         }
+    }
+
+    public async Task Delete()
+    {
+        if (ParentDirectory == null)
+            return;
+
+        await ParentDirectory.DeleteSubdirectory(this);
+    }
+
+    internal async Task InternalDelete()
+    {
+        await _directory.Delete();
+    }
+
+    public async Task DeleteSubdirectory(DirectoryViewModel subdirectory)
+    {
+        if (!Subdirectories.Contains(subdirectory))
+            return;
+
+        await subdirectory.InternalDelete();
+        Subdirectories.Remove(subdirectory);
+
+        OnPropertyChanged(nameof(Subdirectories));
+        OnPropertyChanged(nameof(Contents));
+    }
+
+    public async Task DeleteFile(FileViewModel file)
+    {
+        if (!Files.Contains(file))
+            return;
+
+        await file.InternalDelete();
+        Files.Remove(file);
+
+        OnPropertyChanged(nameof(Files));
+        OnPropertyChanged(nameof(Contents));
     }
 
     public void GetExtractTasks(string destination, Directory directory, Dictionary<string, Action> tasks)

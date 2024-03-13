@@ -41,9 +41,7 @@ namespace InteropHelpers
                 var fields = structure.GetType().GetFields();
                 foreach(var field in fields)
                 {
-                    var val = field.GetValue(structure);
-                    if(val == null)
-                        throw new Exception("val is null");
+                    var val = field.GetValue(structure) ?? throw new Exception("val is null");
                     byte[] fieldBytes = Array.Empty<byte>();
                     var valType = val.GetType();
                     if(valType.IsEnum)

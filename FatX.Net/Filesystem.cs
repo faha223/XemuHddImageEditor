@@ -1,23 +1,17 @@
+using FatX.Net.Helpers;
 using FatX.Net.Structures;
 using InteropHelpers;
 
 namespace FatX.Net
 {
-    public class Filesystem
+    public class Filesystem(Stream stream, long offset, long size)
     {
         public bool Initialized { get; private set; } = false;
-        private Stream _stream;
-        private long Offset { get; init; }
-        public long Size { get; init; }
+        private readonly Stream _stream = stream;
+        private long Offset { get; init; } = offset;
+        public long Size { get; init; } = size;
 
         private Superblock _superblock;
-
-        public Filesystem(Stream stream, long offset, long size)
-        {
-            Offset = offset;
-            Size = size;
-            _stream = stream;
-        }
 
         #region Computed Properties
 
@@ -27,7 +21,7 @@ namespace FatX.Net
 
         public ushort FatType { get; private set; } = 16;
 
-        private List<uint> FatCache = [];
+        private readonly List<uint> FatCache = [];
 
         public long ClusterOffset => FatOffset + FatSize;
         public long NumberOfClusters => ((Size - FatSize - Constants.FATX_FAT_Offset) / BytesPerCluster) + Constants.FATX_FAT_ReservedEntriesCount;
@@ -38,18 +32,18 @@ namespace FatX.Net
         {
             if(Initialized)
                 return;
-                
-            DebugLog($"Initializing Partition {DriveLetter}");
+
+            Logger.Verbose($"Initializing Partition {DriveLetter}");
 
             lock(_stream)
             {
                 _stream.Seek(Offset, SeekOrigin.Begin);
-                _superblock = StructParser.Read<Superblock>(_stream);
+                _superblock = _stream.Read<Superblock>();
                 if(_superblock.Signature != Constants.FATX_Signature)
                     throw new Exception("Invalid FATX Signature");
             }
 
-            DebugLog("Signature Validated");
+            Logger.Verbose("Signature Validated");
 
             FatSize = Size / BytesPerCluster;
             
@@ -68,27 +62,27 @@ namespace FatX.Net
             if (FatSize % 4096 != 0)
                 FatSize += 4096 - FatSize % 4096;
 
-            DebugLog("Partition Info:");
-            DebugLog($"  Partition Offset:    0x{Offset:X16} bytes");
-            DebugLog($"  Partition Size:      0x{Size:X16} bytes\n");
-            DebugLog($"  Volume Id:           {_superblock.VolumeId:X8}");
-            DebugLog($"  Bytes per Sector:    {Constants.SectorSize512}");
-            DebugLog($"  # of Sectors:        {_superblock.SectorsPerCluster * Size / BytesPerCluster}");
-            DebugLog($"  Sectors per Cluster: {_superblock.SectorsPerCluster}");
-            DebugLog($"  # of Clusters:       {NumberOfClusters}");
-            DebugLog($"  Bytes per Cluster:   {BytesPerCluster}");
-            DebugLog($"  FAT Offset:          {FatOffset} bytes\n");
-            DebugLog($"  FAT Size:            {Constants.FATX_FAT_Offset} bytes\n");
-            DebugLog($"  FAT Type:            {FatType}");
-            DebugLog($"  Root Cluster:        {_superblock.RootCluster}");
-            DebugLog($"  Cluster Offset:      0x{ClusterOffset:X8} bytes\n");
+            Logger.Verbose("Partition Info:");
+            Logger.Verbose($"  Partition Offset:    0x{Offset:X16} bytes");
+            Logger.Verbose($"  Partition Size:      0x{Size:X16} bytes\n");
+            Logger.Verbose($"  Volume Id:           {_superblock.VolumeId:X8}");
+            Logger.Verbose($"  Bytes per Sector:    {Constants.SectorSize512}");
+            Logger.Verbose($"  # of Sectors:        {_superblock.SectorsPerCluster * Size / BytesPerCluster}");
+            Logger.Verbose($"  Sectors per Cluster: {_superblock.SectorsPerCluster}");
+            Logger.Verbose($"  # of Clusters:       {NumberOfClusters}");
+            Logger.Verbose($"  Bytes per Cluster:   {BytesPerCluster}");
+            Logger.Verbose($"  FAT Offset:          {FatOffset} bytes\n");
+            Logger.Verbose($"  FAT Size:            {Constants.FATX_FAT_Offset} bytes\n");
+            Logger.Verbose($"  FAT Type:            {FatType}");
+            Logger.Verbose($"  Root Cluster:        {_superblock.RootCluster}");
+            Logger.Verbose($"  Cluster Offset:      0x{ClusterOffset:X8} bytes\n");
 
             ReadFatCache();
 
             Initialized = true;
         }
 
-        public ClusterStream GetCluster(long cluster)
+        internal ClusterStream GetCluster(long cluster)
         {
             return new ClusterStream(this, _stream, cluster);
         }
@@ -126,7 +120,7 @@ namespace FatX.Net
             }
         }
 
-        public long GetNextCluster(long cluster)
+        internal long GetNextCluster(long cluster)
         {
             if(cluster < 0 || cluster >= FatCache.Count)
                 throw new InvalidOperationException("index out of range");
@@ -141,7 +135,7 @@ namespace FatX.Net
             {
                 if(!Initialized)
                     Init(DriveLetter);
-                rootDirectory = new Directory(null, this, DriveLetter, Constants.FATX_FAT_ReservedEntriesCount);
+                rootDirectory = new Directory(this, DriveLetter, Constants.FATX_FAT_ReservedEntriesCount);
             }
             return Task.FromResult(rootDirectory);
         }
@@ -172,13 +166,6 @@ namespace FatX.Net
             }
 
             return searchResults;
-        }
-
-        private void DebugLog(string message)
-        {
-#if DEBUG
-            Console.WriteLine(message);
-#endif
         }
     }
 }

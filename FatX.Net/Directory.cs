@@ -1,25 +1,48 @@
 using FatX.Net.Enums;
+using FatX.Net.Helpers;
 using FatX.Net.Interfaces;
 using FatX.Net.Structures;
 using InteropHelpers;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text;
 
 namespace FatX.Net
 {
     public class Directory : IFileSystemEntry
     {
-        private object _initLock = new();
+        private readonly object _initLock = new();
         private bool Initialized = false;
         public Directory? Parent { get; private set; } = null;
-        private Filesystem _filesystem;
-        public string Name { get; set;  }
+        private readonly Filesystem _filesystem;
+
+        private readonly long _directoryEntryClusterOffset;
+
+        private DirectoryEntry _directoryEntry;
+
+        public string Name 
+        {
+            get => Encoding.ASCII.GetString(_directoryEntry.Filename).Substring(0, (int)_directoryEntry.Status);
+            set
+            {
+                if(Parent != null)
+                {
+                    // Update the DirectoryEntry (filename AND status)
+                    _directoryEntry.Filename = new byte[Constants.FATX_MaxFilenameLen];
+                    Array.Copy(Encoding.ASCII.GetBytes(value), _directoryEntry.Filename, value.Length);
+                    _directoryEntry.Status = (DirectoryEntryStatus)value.Length;
+
+                    // Write the changes to the image
+                    RewriteDirectoryEntry();
+                }
+            }
+        }
 
         public string FullName => (Parent == null) ? $"{Name}:" : Parent.FullName + Path.DirectorySeparatorChar + Name;
 
-        private long _cluster;
+        public long Cluster => _directoryEntry.FirstCluster;
 
-        private List<Directory> _subdirectories = [];
+        private readonly List<Directory> _subdirectories = [];
         public List<Directory> Subdirectories
         {
              get {
@@ -32,7 +55,7 @@ namespace FatX.Net
              }
         }
 
-        private List<File> _files = [];
+        private readonly List<File> _files = [];
         public List<File> Files 
         {
             get{
@@ -45,45 +68,49 @@ namespace FatX.Net
             }
         }
 
-        public Directory(Directory? parent, Filesystem filesystem, string name, long cluster)
+        public Directory(Filesystem filesystem, string name, uint cluster)
+        {
+            _filesystem = filesystem;
+            _directoryEntry.Filename = new byte[Constants.FATX_MaxFilenameLen];
+            Array.Copy(Encoding.ASCII.GetBytes(name), _directoryEntry.Filename, name.Length);
+            _directoryEntry.Status = (DirectoryEntryStatus)name.Length;
+            _directoryEntry.FirstCluster = cluster;
+        }
+
+        public Directory(Directory? parent, Filesystem filesystem, DirectoryEntry directoryEntry, long directoryEntryClusterOffset)
         {
             Parent = parent;
-            Name = name;
             _filesystem = filesystem;
-            _cluster = cluster;
+            _directoryEntry = directoryEntry;
+            _directoryEntryClusterOffset = directoryEntryClusterOffset;
         }
 
-        public Directory(Filesystem filesystem, string name, long cluster) : this(null, filesystem, name, cluster)
+        private Task InitAsync()
         {
-        }
-
-        private async Task InitAsync()
-        {
-            var cluster = _filesystem.GetCluster(_cluster);
+            var cluster = _filesystem.GetCluster(_directoryEntry.FirstCluster);
             
             while(cluster.Position < cluster.Length)
             {
-                var dirEnt = await StructParser.ReadAsync<DirectoryEntry>(cluster);
-                if (dirEnt.Status == DirectoryEntryStatus.EndOfDirMarker ||
-                    dirEnt.Status == DirectoryEntryStatus.Available)
+                long directoryEntryLocation = cluster.Position;
+                var directoryEntry = cluster.Read<DirectoryEntry>();
+                if (directoryEntry.Status == DirectoryEntryStatus.EndOfDirMarker ||
+                    directoryEntry.Status == DirectoryEntryStatus.Available)
                 {
                     Initialized = true;
-                    return;
+                    return Task.CompletedTask;
                 }
-                else if(dirEnt.Status == DirectoryEntryStatus.Deleted)
+                else if(directoryEntry.Status == DirectoryEntryStatus.Deleted)
                     continue;
 
-                // Truncate the extra characters
-                dirEnt.Filename = dirEnt.Filename.Substring(0, (int)dirEnt.Status);
-
-                if (dirEnt.FileSize > 0)
-                    _files.Add(new File(this, _filesystem, dirEnt.Filename, dirEnt.FirstCluster, dirEnt.FileSize));
+                if (directoryEntry.FileSize > 0)
+                    _files.Add(new File(this, _filesystem, directoryEntry, directoryEntryLocation));
                 else
-                    _subdirectories.Add(new Directory(this, _filesystem, dirEnt.Filename, dirEnt.FirstCluster));
+                    _subdirectories.Add(new Directory(this, _filesystem, directoryEntry, directoryEntryLocation));
             }
 
             Initialized = true;
-            Console.WriteLine("ERROR: Got to the end of the cluster before the end of the Directory");
+            Logger.Error("Got to the end of the cluster before the end of the Directory");
+            return Task.CompletedTask;
         }
 
         public async Task PrintTree()
@@ -111,7 +138,7 @@ namespace FatX.Net
             }
         }
 
-        private void CreateDirectory(string name)
+        private static void CreateDirectory(string name)
         {
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 CreateDirectory_Windows(name);
@@ -119,17 +146,47 @@ namespace FatX.Net
                 CreateDirectory_Unix(name);
         }
 
-        private void CreateDirectory_Windows(string name)
+        private static void CreateDirectory_Windows(string name)
         {
             if(!System.IO.Directory.Exists(name))
                 System.IO.Directory.CreateDirectory(name);
         }
 
         [UnsupportedOSPlatform("Windows")]
-        private void CreateDirectory_Unix(string name)
+        private static void CreateDirectory_Unix(string name)
         {
             if(!System.IO.Directory.Exists(name))
                 System.IO.Directory.CreateDirectory(name, Constants.DefaultDirectoryMode);
+        }
+
+        public async Task Delete()
+        {
+            if (Parent == null)
+                return;
+
+            foreach (var subdirectory in Subdirectories)
+                await subdirectory.Delete();
+            Subdirectories.Clear();
+
+            foreach (var file in Files)
+                await file.Delete();
+            Files.Clear();
+
+            _directoryEntry.Status = DirectoryEntryStatus.Deleted;
+            RewriteDirectoryEntry();
+
+            // You can't delete a root directory
+            Parent.Subdirectories.Remove(this);
+        }
+
+        private void RewriteDirectoryEntry()
+        {
+            if (Parent == null)
+                return;
+
+            using var clusterStream = _filesystem.GetCluster(Parent.Cluster);
+            clusterStream.Seek(_directoryEntryClusterOffset, SeekOrigin.Begin);
+            clusterStream.Write(_directoryEntry);
         }
     }
 }

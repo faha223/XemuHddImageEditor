@@ -16,7 +16,7 @@ namespace QCow2.Net
 
         public QCow2Image(string filename)
         {
-            using FileStream source = new FileStream(filename, FileMode.Open);
+            using FileStream source = new(filename, FileMode.Open);
             _source = source;
             Load();
         }
@@ -29,11 +29,11 @@ namespace QCow2.Net
 
         private void Load()
         {
-            fileHeader = StructParser.Read<FileHeader>(_source, true);
+            fileHeader = _source.Read<FileHeader>(true);
             PrintFileHeader(fileHeader);
 
             Console.WriteLine("--- Start of Header Extensions ---");
-            var headerExtension = StructParser.Read<HeaderExtensionRequiredData>(_source, true);
+            var headerExtension = _source.Read<HeaderExtensionRequiredData>(true);
             while(headerExtension.Type != HeaderExtensionType.EndOfHeaderExtensionArea && headerExtension.Length > 0)
             {
                 Console.WriteLine($"Header Extension Type: {headerExtension.Type}");
@@ -46,14 +46,14 @@ namespace QCow2.Net
                     for(uint i = 0; i < numEntries; i++)
                     {
                         Console.WriteLine("Feature:");
-                        var featureName = StructParser.Read<FeatureNameTableEntry>(_source, false);
+                        var featureName = _source.Read<FeatureNameTableEntry>(false);
                         PrintFeatureName(featureName);
                     }
                 }
                 else if(headerExtension.Type == HeaderExtensionType.BitmapsExtension)
                 {
                     Console.WriteLine("---UNTESTED----");
-                    var bmpExt = StructParser.Read<BitmapsExtension>(_source, true);
+                    var bmpExt = _source.Read<BitmapsExtension>(true);
                     PrintBitmapExtension(bmpExt);
                 }
                 else
@@ -64,7 +64,7 @@ namespace QCow2.Net
                 }
 
                 // Read Next Header
-                headerExtension = StructParser.Read<HeaderExtensionRequiredData>(_source, true);
+                headerExtension = _source.Read<HeaderExtensionRequiredData>(true);
             }
 
             Console.WriteLine("--- End of Header Extensions ---");

@@ -1,20 +1,14 @@
-using System.IO.Pipelines;
 using System.Reactive.Linq;
-using System.Threading.Tasks.Dataflow;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
-using XemuHddImageEditor.ViewModels;
-using XemuHddImageEditor.Views;
 
 namespace XemuHddImageEditor.Helpers;
 
 public static class DialogHelpers
-{
-    static Interaction<Window, Window?> showDialog =new();
-    
+{    
     static Window? AppMainWindow => (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
 
     public static async Task ShowDialog<T>(Window dialog)

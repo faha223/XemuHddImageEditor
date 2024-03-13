@@ -1,40 +1,49 @@
+using FatX.Net.Enums;
+using FatX.Net.Helpers;
 using FatX.Net.Interfaces;
-using System.IO;
+using FatX.Net.Structures;
+using InteropHelpers;
+using System.Text;
 
 namespace FatX.Net
 {
-    public class File : IFileSystemEntry
+    public class File(Directory parent, Filesystem filesystem, DirectoryEntry directoryEntry, long directoryEntryClusterOffset) : IFileSystemEntry
     {
-        private Filesystem _filesystem;
+        private readonly Filesystem _filesystem = filesystem;
 
-        public Directory Parent { get; private set; }
+        public Directory Parent { get; private set; } = parent;
 
-        private long _firstCluster;
+        private readonly long _directoryEntryClusterOffset = directoryEntryClusterOffset;
 
-        public long FileSize { get; private set; }
+        private DirectoryEntry _directoryEntry = directoryEntry;
 
-        public string Name { get; set; }
+        public string Name
+        {
+            get => Encoding.ASCII.GetString(_directoryEntry.Filename).Substring(0, (int)_directoryEntry.Status);
+            set {
+                // Update the DirectoryEntry (filename AND status)
+                _directoryEntry.Filename = new byte[Constants.FATX_MaxFilenameLen];
+                Array.Copy(Encoding.ASCII.GetBytes(value), _directoryEntry.Filename, value.Length);
+                _directoryEntry.Status = (DirectoryEntryStatus)value.Length;
+
+                // Write the changes to the image
+                RewriteDirectoryEntry();
+            }
+        }
+
+        public long FileSize => _directoryEntry.FileSize;
 
         public string FullName => Parent.FullName + Path.DirectorySeparatorChar + Name;
 
-        public File(Directory parent, Filesystem filesystem, string name, long firstCluster, long fileSize)
-        {
-            Parent = parent;
-            _filesystem = filesystem;
-            Name = name;
-            _firstCluster = firstCluster;
-            FileSize = fileSize;
-        }
-
         public async Task<byte[]> GetContentsAsync()
         {
-            var buffer = new byte[FileSize];
+            var buffer = new byte[_directoryEntry.FileSize];
             long bytesRead = 0;
-            var cluster = _filesystem.GetCluster(_firstCluster);
-            while (bytesRead < FileSize)
+            var cluster = _filesystem.GetCluster(_directoryEntry.FirstCluster);
+            while (bytesRead < _directoryEntry.FileSize)
             {
-                bytesRead += await ReadFromClusterAsync(cluster, buffer, bytesRead, FileSize - bytesRead);
-                if(bytesRead < FileSize)
+                bytesRead += await ReadFromClusterAsync(cluster, buffer, bytesRead, _directoryEntry.FileSize - bytesRead);
+                if(bytesRead < _directoryEntry.FileSize)
                 {
                     cluster = cluster.NextCluster();
                     if(cluster == null)
@@ -75,7 +84,7 @@ namespace FatX.Net
             using var outStream = new FileStream(filename, FileMode.Create);
 
             long totalBytesRead = 0;
-            var cluster = _filesystem.GetCluster(_firstCluster);
+            var cluster = _filesystem.GetCluster(_directoryEntry.FirstCluster);
             var buffer = new byte[_filesystem.BytesPerCluster];
             while (totalBytesRead < FileSize)
             {
@@ -91,7 +100,7 @@ namespace FatX.Net
                         if(nextCluster == null)
                         {
                             // Cannot read file
-                            Console.WriteLine("Error Reading File {FullName}: Premature EOF");
+                            Logger.Error($"Reading File {FullName}: Premature EOF");
                             break;
                         }
                         cluster = nextCluster;
@@ -100,6 +109,23 @@ namespace FatX.Net
             }
             outStream.Flush();
             outStream.Close();
+        }
+
+        public Task Delete()
+        {
+            _directoryEntry.Status = DirectoryEntryStatus.Deleted;
+            _directoryEntry.FileSize = 0;
+            RewriteDirectoryEntry();
+            Parent.Files.Remove(this);
+
+            return Task.CompletedTask;
+        }
+
+        private void RewriteDirectoryEntry()
+        {
+            using var clusterStream = _filesystem.GetCluster(Parent.Cluster);
+            clusterStream.Seek(_directoryEntryClusterOffset, SeekOrigin.Begin);
+            clusterStream.Write(_directoryEntry);
         }
     }
 }

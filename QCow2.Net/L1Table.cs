@@ -15,7 +15,7 @@ namespace QCow2.Net
             while((ulong)source.Position < fileHeader.L1TableOffset + (fileHeader.L1Size * 8))
             {
                 // Read L1 Table Entries
-                var entry = StructParser.Read<L1TableEntry>(source, true);
+                var entry = source.Read<L1TableEntry>(true);
                 Console.WriteLine($"Entry (raw): {entry.Bits:B64}");
                 Console.WriteLine($"Entry: {(entry.Bits & 0x07FFFFFFFFFFFF00L) >> 9}");
 

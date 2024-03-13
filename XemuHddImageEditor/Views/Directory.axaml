@@ -12,6 +12,8 @@
 					<ContextMenu>
 						<MenuItem Header="Rename" Command="{Binding Rename}" />
 						<MenuItem Header="Extract" Command="{Binding Extract}" />
+						<Separator />
+						<MenuItem Header="Delete" Command="{Binding Delete}" />
 					</ContextMenu>
 				</Border.ContextMenu>
 				<StackPanel Margin="5">
@@ -33,6 +35,8 @@
 						<MenuItem Header="Open" Command="{Binding Open}" />
 						<MenuItem Header="Rename" Command="{Binding Rename}" />
 						<MenuItem Header="Extract" Command="{Binding Extract}" />
+						<Separator />
+						<MenuItem Header="Delete" Command="{Binding Delete}" />
 					</ContextMenu>
 				</Border.ContextMenu>
 				<StackPanel Margin="5">
@@ -48,12 +52,13 @@
 			</Border>
 		</DataTemplate>
 	</UserControl.DataTemplates>
-	<ListBox Theme="{StaticResource FlowLayoutListBox}" ItemsSource="{Binding Contents}" Margin="0,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-		<ListBox.ContextMenu>
+	<Border Background="Transparent" Margin="0,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+		<Border.ContextMenu>
 			<ContextMenu>
 				<MenuItem Header="New Folder" Command="{Binding CreateDirectory}" />
 				<MenuItem Header="Import Files" Command="{Binding ImportFiles}" />
 			</ContextMenu>
-		</ListBox.ContextMenu>
-	</ListBox>
+		</Border.ContextMenu>
+		<ListBox Theme="{StaticResource FlowLayoutListBox}" ItemsSource="{Binding Contents}" />
+	</Border>
 </UserControl>

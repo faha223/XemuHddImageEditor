@@ -4,10 +4,10 @@ namespace FatX.Net
 {
     public class ClusterStream : Stream
     {
-        private Filesystem _filesystem;
-        private Stream _stream;
-        private long _cluster;
-        private long _clusterOffset;
+        private readonly Filesystem _filesystem;
+        private readonly Stream _stream;
+        private readonly long _cluster;
+        private readonly long _clusterOffset;
 
         public override bool CanRead => true;
 
@@ -57,6 +57,16 @@ namespace FatX.Net
             return Task.FromResult(Read(buffer, offset, count));
         }
 
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            lock(_stream)
+            {
+                _stream.Seek(_clusterOffset + Position, SeekOrigin.Begin);
+                int bytesRead = _stream.ReadAtLeast(buffer.Span, buffer.Length, true);
+                return new ValueTask<int>(bytesRead);
+            }
+        }
+
         public ClusterStream? NextCluster()
         {
             long _nextCluster = _filesystem.GetNextCluster(_cluster);
@@ -97,6 +107,7 @@ namespace FatX.Net
             {
                 _stream.Seek(_clusterOffset + Position, SeekOrigin.Begin);
                 _stream.Write(buffer, offset, count);
+                _stream.Flush();
                 Position += count;
             }
         }
