@@ -12,11 +12,11 @@
     <Grid RowDefinitions="auto,*" Background="#FF161616">
         <StackPanel Margin="5">
             <DockPanel>
-                <TextBlock Text="Current Filename: " DockPanel.Dock="Left" VerticalAlignment="Center" />
+                <TextBlock Text="Current Filename: " DockPanel.Dock="Left" />
                 <TextBlock Text="{Binding Filename}" />
             </DockPanel>
             <DockPanel Margin="0,5">
-                <TextBlock Text="New Filename: " DockPanel.Dock="Left" VerticalAlignment="Center" />
+                <TextBlock Text="New Filename: " DockPanel.Dock="Left" Margin="0,7,0,0" />
                 <TextBox Text="{Binding NewFilename}" Width="360" />
             </DockPanel>
             <StackPanel Orientation="Horizontal" Margin="0,25,0,0" HorizontalAlignment="Right">

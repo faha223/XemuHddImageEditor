@@ -1,33 +1,27 @@
 namespace FatX.Net
 {
-    public class Partition
+    public class Partition(Stream stream, char driveLetter, long offset, long size)
     {
-        public string DriveLetter { get; }
+        public char DriveLetter { get; init; } = driveLetter;
 
-        private Filesystem _filesystem;
-        
-        public Partition(Stream stream, string driveLetter, long offset, long size)
-        {
-            DriveLetter = driveLetter;
-            _filesystem = new Filesystem(stream, offset, size);
-        }
+        private readonly Filesystem _filesystem = new(stream, driveLetter, offset, size);
 
         public async Task<Directory> GetRootDirectory()
         {
-            _filesystem.Init(DriveLetter);
-            return await _filesystem.GetRootDirectory(DriveLetter);
+            _filesystem.Init();
+            return await _filesystem.GetRootDirectory();
         }
 
         public async Task<List<string>> Search(string query)
         {
-            _filesystem.Init(DriveLetter);
+            _filesystem.Init();
             return await Search(new PathMatcher(query));
         }
 
         internal async Task<List<string>> Search(PathMatcher matcher)
         {
-            _filesystem.Init(DriveLetter);
-            return await _filesystem.Search(DriveLetter, matcher);
+            _filesystem.Init();
+            return await _filesystem.Search(matcher);
         }
     }
 }

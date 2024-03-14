@@ -40,7 +40,7 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 	<Grid RowDefinitions="auto,120,*" ColumnDefinitions="240,*">
-		<Menu Grid.Row="0" Grid.ColumnSpan="2">
+		<Menu Grid.Row="0" Grid.ColumnSpan="32">
 			<MenuItem Header="_File">
 				<MenuItem Header="_Load Image" Command="{Binding LoadImage}" />
 				<Separator />
@@ -48,13 +48,13 @@
 			</MenuItem>
 		</Menu>
 		<Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="#161616" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2">
-			<StackPanel>
-			<DockPanel>
+			<DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Top">
 				<Button Margin="5" DockPanel.Dock="Left" IsEnabled="{Binding CanGoUp}" Command="{Binding GoToParentDirectory}">Go Up</Button>
-				<TextBlock Text="Directory" DockPanel.Dock="Left" VerticalAlignment="Center" />
-				<TextBox Text="{Binding SelectedDirectoryPath}" Margin="5" />
+				<Panel DockPanel.Dock="Right" Margin="5">
+					<ComboBox PlaceholderText="Search" SelectedValue="{Binding SearchQuery}" DockPanel.Dock="Right" Margin="5,0,0,0" Width="320" />
+				</Panel>
+				<TextBox Text="{Binding SelectedDirectoryPath}" Margin="0,5" />
 			</DockPanel>
-			</StackPanel>
 		</Border>
 		<Border Grid.Row="2" Grid.Column="0" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2" Background="#FF161616">
 			<views:DirectoryTree DataContext="{Binding DirectoryTreeVM}" />

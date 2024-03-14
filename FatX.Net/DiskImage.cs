@@ -1,5 +1,4 @@
 using FatX.Net.Helpers;
-using System.Diagnostics;
 
 namespace FatX.Net
 {
@@ -22,15 +21,15 @@ namespace FatX.Net
         {
             // FATX Drives don't have a Master Boot Record, so no point in looking for one
             Logger.Verbose("Loading Partition C");
-            Partitions.Add(new Partition(stream, "C", Constants.CPartitionOffset, Constants.CPartitionSize));
+            Partitions.Add(new Partition(stream, 'C', Constants.CPartitionOffset, Constants.CPartitionSize));
             Logger.Verbose("Loading Partition E");
-            Partitions.Add(new Partition(stream, "E", Constants.EPartitionOffset, Constants.EPartitionSize));
+            Partitions.Add(new Partition(stream, 'E', Constants.EPartitionOffset, Constants.EPartitionSize));
             Logger.Verbose("Loading Partition X");
-            Partitions.Add(new Partition(stream, "X", Constants.XPartitionOffset, Constants.XPartitionSize));
+            Partitions.Add(new Partition(stream, 'X', Constants.XPartitionOffset, Constants.XPartitionSize));
             Logger.Verbose("Loading Partition Y");
-            Partitions.Add(new Partition(stream, "Y", Constants.YPartitionOffset, Constants.YPartitionSize));
+            Partitions.Add(new Partition(stream, 'Y', Constants.YPartitionOffset, Constants.YPartitionSize));
             Logger.Verbose("Loading Partition Z");
-            Partitions.Add(new Partition(stream, "Z", Constants.ZPartitionOffset, Constants.ZPartitionSize));
+            Partitions.Add(new Partition(stream, 'Z', Constants.ZPartitionOffset, Constants.ZPartitionSize));
             Logger.Verbose("Partitions Loaded");
         }
     

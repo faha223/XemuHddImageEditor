@@ -1,5 +1,6 @@
-using System.Windows.Input;
 using ReactiveUI;
+using System.ComponentModel.DataAnnotations;
+using System.Windows.Input;
 
 namespace XemuHddImageEditor.ViewModels;
 
@@ -10,6 +11,7 @@ public class RenameFileModalViewModel(IFileSystemEntry file)
     public string FullName => _file.FullName;
     public string Filename => _file.Name;
 
+    [StringLength(FatX.Net.Constants.FATX_MaxFilenameLen)]
     public string NewFilename { get; set; } = file.Name;
 
     public bool DialogResult { get; private set; } = false;
@@ -18,8 +20,11 @@ public class RenameFileModalViewModel(IFileSystemEntry file)
 
     private void SaveAndClose()
     {
-        DialogResult = true;
-        CloseRequested?.Invoke(this, EventArgs.Empty);
+        if(NewFilename.Length > 0 && NewFilename.Length <= FatX.Net.Constants.FATX_MaxFilenameLen)
+        {
+            DialogResult = true;
+            CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     public ICommand CancelButtonCommand => ReactiveCommand.Create(CloseWithoutSaving);

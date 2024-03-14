@@ -12,7 +12,7 @@ namespace FatX.Net
     public class Directory : IFileSystemEntry
     {
         private readonly object _initLock = new();
-        private bool Initialized = false;
+        private bool _initialized = false;
         public Directory? Parent { get; private set; } = null;
         private readonly Filesystem _filesystem;
 
@@ -40,7 +40,7 @@ namespace FatX.Net
 
         public string FullName => (Parent == null) ? $"{Name}:" : Parent.FullName + Path.DirectorySeparatorChar + Name;
 
-        public long Cluster => _directoryEntry.FirstCluster;
+        public uint Cluster => _directoryEntry.FirstCluster;
 
         private readonly List<Directory> _subdirectories = [];
         public List<Directory> Subdirectories
@@ -48,7 +48,7 @@ namespace FatX.Net
              get {
                 lock(_initLock)
                 {
-                    if(!Initialized)
+                    if(!_initialized)
                         InitAsync().Wait();
                 }
                 return _subdirectories;
@@ -61,14 +61,14 @@ namespace FatX.Net
             get{
                 lock(_initLock)
                 {
-                    if(!Initialized)
+                    if(!_initialized)
                         InitAsync().Wait();
                 }
                 return _files;
             }
         }
 
-        public Directory(Filesystem filesystem, string name, uint cluster)
+        internal Directory(Filesystem filesystem, string name, uint cluster)
         {
             _filesystem = filesystem;
             _directoryEntry.Filename = new byte[Constants.FATX_MaxFilenameLen];
@@ -77,7 +77,7 @@ namespace FatX.Net
             _directoryEntry.FirstCluster = cluster;
         }
 
-        public Directory(Directory? parent, Filesystem filesystem, DirectoryEntry directoryEntry, long directoryEntryClusterOffset)
+        private Directory(Directory? parent, Filesystem filesystem, DirectoryEntry directoryEntry, long directoryEntryClusterOffset)
         {
             Parent = parent;
             _filesystem = filesystem;
@@ -91,16 +91,17 @@ namespace FatX.Net
             
             while(cluster.Position < cluster.Length)
             {
-                long directoryEntryLocation = cluster.Position;
+                var directoryEntryLocation = cluster.Position;
                 var directoryEntry = cluster.Read<DirectoryEntry>();
-                if (directoryEntry.Status == DirectoryEntryStatus.EndOfDirMarker ||
-                    directoryEntry.Status == DirectoryEntryStatus.Available)
+                switch (directoryEntry.Status)
                 {
-                    Initialized = true;
-                    return Task.CompletedTask;
+                    case DirectoryEntryStatus.EndOfDirMarker:
+                    case DirectoryEntryStatus.Available:
+                        _initialized = true;
+                        return Task.CompletedTask;
+                    case DirectoryEntryStatus.Deleted:
+                        continue;
                 }
-                else if(directoryEntry.Status == DirectoryEntryStatus.Deleted)
-                    continue;
 
                 if (directoryEntry.FileSize > 0)
                     _files.Add(new File(this, _filesystem, directoryEntry, directoryEntryLocation));
@@ -108,7 +109,7 @@ namespace FatX.Net
                     _subdirectories.Add(new Directory(this, _filesystem, directoryEntry, directoryEntryLocation));
             }
 
-            Initialized = true;
+            _initialized = true;
             Logger.Error("Got to the end of the cluster before the end of the Directory");
             return Task.CompletedTask;
         }
@@ -118,10 +119,12 @@ namespace FatX.Net
             Console.WriteLine(FullName);
             foreach(var file in Files)
                 Console.WriteLine(file.FullName);
-            foreach(var subdir in Subdirectories)
-                await subdir.PrintTree();
+            foreach(var subdirectory in Subdirectories)
+                await subdirectory.PrintTree();
         }
 
+        #region Extract
+        
         public async Task Extract(string destination) => await Extract(destination, false);
 
         public async Task Extract(string dest, bool recursive)
@@ -137,7 +140,10 @@ namespace FatX.Net
                     await subdirectory.Extract(dest, recursive);
             }
         }
+        
+        #endregion Extract
 
+        #region Create Directory
         private static void CreateDirectory(string name)
         {
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -159,6 +165,10 @@ namespace FatX.Net
                 System.IO.Directory.CreateDirectory(name, Constants.DefaultDirectoryMode);
         }
 
+        #endregion Create Directory
+        
+        #region Delete
+        
         public async Task Delete()
         {
             if (Parent == null)
@@ -179,8 +189,50 @@ namespace FatX.Net
             Parent.Subdirectories.Remove(this);
         }
 
+        #endregion Delete
+
+        #region Create File
+        
+        /// <summary>
+        /// Create a new file inside this directory
+        /// </summary>
+        /// <param name="filename">The name of the fle to be created</param>
+        /// <param name="content">The contents of the file</param>
+        /// <returns>A File instance if one was able to be created. Null if not.</returns>
+        public Task<File?> CreateFile(string filename, Stream content)
+        {
+            return Task.FromResult<File?>(null);
+        }
+
+        /// <summary>
+        /// Create a new file inside this directory
+        /// </summary>
+        /// <param name="filename">The name of the fle to be created</param>
+        /// <param name="content">The contents of the file</param>
+        /// <returns>A File instance if one was able to be created. Null if not.</returns>
+        public async Task<File?> CreateFile(string filename, byte[] content) =>
+            await CreateFile(filename, new MemoryStream(content));
+
+        #endregion Create File
+        
+        #region Create Subdirectory
+        
+        /// <summary>
+        /// Create a new directory inside this one
+        /// </summary>
+        /// <param name="name">The name of the subdirectory that is to be created</param>
+        /// <returns>a Directory instance if one was able to be created. Null if not.</returns>
+        public Task<Directory?> CreateSubdirectory(string name)
+        {
+            // TODO: Implement This
+            return Task.FromResult<Directory?>(null);
+        }
+        
+        #endregion Create Subdirectory
+        
         private void RewriteDirectoryEntry()
         {
+            // Root Directories don't have proper Directory Entries
             if (Parent == null)
                 return;
 

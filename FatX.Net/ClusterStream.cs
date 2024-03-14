@@ -6,7 +6,7 @@ namespace FatX.Net
     {
         private readonly Filesystem _filesystem;
         private readonly Stream _stream;
-        private readonly long _cluster;
+        private readonly uint _cluster;
         private readonly long _clusterOffset;
 
         public override bool CanRead => true;
@@ -24,7 +24,7 @@ namespace FatX.Net
             set { _position = value; }
         }
 
-        public ClusterStream(Filesystem filesystem, Stream underlyingStream, long cluster)
+        public ClusterStream(Filesystem filesystem, Stream underlyingStream, uint cluster)
         {
             _filesystem = filesystem;
             _stream = underlyingStream;
@@ -69,7 +69,7 @@ namespace FatX.Net
 
         public ClusterStream? NextCluster()
         {
-            long _nextCluster = _filesystem.GetNextCluster(_cluster);
+            uint _nextCluster = _filesystem.GetNextCluster(_cluster);
             if (_nextCluster == 0 || _nextCluster >= 0xFFFFFFF0)
                 return null;
 

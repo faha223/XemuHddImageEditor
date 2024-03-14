@@ -21,6 +21,8 @@ public class MainWindowViewModel : ViewModelBase
         set { DirectoryTreeVM.SelectedDirectoryPath = value; }
     }
 
+    public string? SearchQuery { get; set; } = null;
+
     public MainWindowViewModel()
     {
         DirectoryTreeVM.SelectedDirectoryChanged += DirectoryTreeVM_SelectedDirectoryChanged;

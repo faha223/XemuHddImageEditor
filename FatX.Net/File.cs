@@ -7,16 +7,61 @@ using System.Text;
 
 namespace FatX.Net
 {
-    public class File(Directory parent, Filesystem filesystem, DirectoryEntry directoryEntry, long directoryEntryClusterOffset) : IFileSystemEntry
+    public class File : IFileSystemEntry
     {
-        private readonly Filesystem _filesystem = filesystem;
+        private readonly Filesystem _filesystem;
 
-        public Directory Parent { get; private set; } = parent;
+        public Directory Parent { get; private set; }
 
-        private readonly long _directoryEntryClusterOffset = directoryEntryClusterOffset;
+        private readonly long _directoryEntryClusterOffset;
 
-        private DirectoryEntry _directoryEntry = directoryEntry;
+        private DirectoryEntry _directoryEntry;
 
+        public DateTime DateCreated
+        {
+            get => DatePacker.Unpack(_directoryEntry.CreatedDate, _directoryEntry.CreatedTime);
+            set
+            {
+                DatePacker.Pack(value, out var date, out var time);
+                _directoryEntry.CreatedDate = date;
+                _directoryEntry.CreatedTime = time;
+                RewriteDirectoryEntry();
+            }
+        }
+        
+        public DateTime DateModified
+        {
+            get => DatePacker.Unpack(_directoryEntry.ModifiedDate, _directoryEntry.ModifiedTime);
+            set
+            {
+                DatePacker.Pack(value, out var date, out var time);
+                _directoryEntry.ModifiedDate = date;
+                _directoryEntry.ModifiedTime = time;
+                RewriteDirectoryEntry();
+            }
+        }
+        
+        public DateTime DateAccessed
+        {
+            get => DatePacker.Unpack(_directoryEntry.AccessedDate, _directoryEntry.AccessedTime);
+            set
+            {
+                DatePacker.Pack(value, out var date, out var time);
+                _directoryEntry.AccessedDate = date;
+                _directoryEntry.AccessedTime = time;
+                RewriteDirectoryEntry();
+            }
+        }
+
+        internal File(Directory parent, Filesystem filesystem, DirectoryEntry directoryEntry,
+            long directoryEntryClusterOffset)
+        {
+            _filesystem = filesystem;
+            Parent = parent;
+            _directoryEntry = directoryEntry;
+            _directoryEntryClusterOffset = directoryEntryClusterOffset;
+        }
+        
         public string Name
         {
             get => Encoding.ASCII.GetString(_directoryEntry.Filename).Substring(0, (int)_directoryEntry.Status);
@@ -113,6 +158,7 @@ namespace FatX.Net
 
         public Task Delete()
         {
+            _filesystem.FreeClusters(ref _directoryEntry);
             _directoryEntry.Status = DirectoryEntryStatus.Deleted;
             _directoryEntry.FileSize = 0;
             RewriteDirectoryEntry();

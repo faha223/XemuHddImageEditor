@@ -4,8 +4,9 @@ using InteropHelpers;
 
 namespace FatX.Net
 {
-    public class Filesystem(Stream stream, long offset, long size)
+    public class Filesystem(Stream stream, char driveLetter, long offset, long size)
     {
+        public char DriveLetter { get; init; } = char.ToUpperInvariant(driveLetter);
         public bool Initialized { get; private set; } = false;
         private readonly Stream _stream = stream;
         private long Offset { get; init; } = offset;
@@ -21,14 +22,14 @@ namespace FatX.Net
 
         public ushort FatType { get; private set; } = 16;
 
-        private readonly List<uint> FatCache = [];
+        private readonly List<uint> _fatCache = [];
 
         public long ClusterOffset => FatOffset + FatSize;
         public long NumberOfClusters => ((Size - FatSize - Constants.FATX_FAT_Offset) / BytesPerCluster) + Constants.FATX_FAT_ReservedEntriesCount;
         
         #endregion Computed Properties
 
-        public void Init(string DriveLetter)
+        public void Init()
         {
             if(Initialized)
                 return;
@@ -82,7 +83,7 @@ namespace FatX.Net
             Initialized = true;
         }
 
-        internal ClusterStream GetCluster(long cluster)
+        internal ClusterStream GetCluster(uint cluster)
         {
             return new ClusterStream(this, _stream, cluster);
         }
@@ -96,54 +97,82 @@ namespace FatX.Net
                 
                 if(FatType == 16)
                 {
-                    byte[] buffer = new byte[numEntries * sizeof(ushort)];
-                    _stream.Read(buffer, 0, buffer.Length);
-                    for(int i = 0; i < numEntries; i++)
+                    var buffer = new byte[numEntries * sizeof(ushort)];
+                    _stream.ReadExactly(buffer);
+                    for(var i = 0; i < numEntries; i++)
                     {
                         var entry = BitConverter.ToUInt16(buffer, i * sizeof(ushort));
                         var entryAsUint = (uint)entry;
                         if (entryAsUint >= 0x0000FFF0)
                             entryAsUint |= 0xFFFF0000;
-                        FatCache.Add(entryAsUint);
+                        _fatCache.Add(entryAsUint);
                     }
                 }
                 else
                 {
                     byte[] buffer = new byte[numEntries * sizeof(uint)];
-                    _stream.Read(buffer, 0, buffer.Length);
+                    _stream.ReadExactly(buffer);
+                    
                     for(int i = 0; i < numEntries; i++)
                     {
                         var entry = BitConverter.ToUInt32(buffer, i * sizeof(uint));
-                        FatCache.Add(entry);
+                        _fatCache.Add(entry);
                     }
                 }
             }
         }
 
-        internal long GetNextCluster(long cluster)
+        internal uint GetNextCluster(uint cluster)
         {
-            if(cluster < 0 || cluster >= FatCache.Count)
+            if(cluster >= _fatCache.Count)
                 throw new InvalidOperationException("index out of range");
 
-            return FatCache[(int)cluster];
+            return _fatCache[(int)cluster];
         }
 
-        private Directory? rootDirectory = null;
-        public Task<Directory> GetRootDirectory(string DriveLetter)
+        internal void FreeClusters(ref DirectoryEntry entry)
         {
-            if(rootDirectory == null)
+            long bytesFreed = 0;
+            var cluster = entry.FirstCluster;
+            var fileSize = Math.Min(1, entry.FileSize); // Directories have a file size of 0 but they use at least 1 cluster
+            while(bytesFreed < fileSize)
             {
-                if(!Initialized)
-                    Init(DriveLetter);
-                rootDirectory = new Directory(this, DriveLetter, Constants.FATX_FAT_ReservedEntriesCount);
+                FreeCluster(cluster);
+                cluster = GetNextCluster(cluster);
+                bytesFreed += BytesPerCluster;
             }
-            return Task.FromResult(rootDirectory);
         }
 
-        public async Task<List<string>> Search(string driveLetter, PathMatcher matcher)
+        internal void FreeCluster(uint cluster)
+        {
+            byte[] newEntry = [ 0x00, 0x00, 0x00, 0x00 ];
+            var fatEntrySize = this.FatType == 16 ? sizeof(ushort) : sizeof(uint);
+            var fatOffset = fatEntrySize * cluster;
+
+            // Zero out the entry
+            lock(_stream)
+            {
+                _stream.Seek(FatOffset + fatOffset, SeekOrigin.Begin);
+                _stream.Write(newEntry, 0, fatEntrySize);
+                _stream.Flush();
+            }
+        }
+
+        private Directory? _rootDirectory = null;
+        public Task<Directory> GetRootDirectory()
+        {
+            if(_rootDirectory == null)
+            {
+                if(!Initialized) Init();
+                _rootDirectory = new Directory(this, DriveLetter.ToString(), Constants.FATX_FAT_ReservedEntriesCount);
+            }
+            return Task.FromResult(_rootDirectory);
+        }
+
+        public async Task<List<string>> Search(PathMatcher matcher)
         {
             List<string> searchResults = [];
-            List<Directory> list1 = [ await GetRootDirectory(driveLetter) ];
+            List<Directory> list1 = [ await GetRootDirectory() ];
             List<Directory> list2 = [];
             while(list1.Count > 0)
             {
@@ -166,6 +195,12 @@ namespace FatX.Net
             }
 
             return searchResults;
+        }
+
+        public Task<uint> FindAvailableCluster()
+        {
+            // TODO: Implement This
+            return Task.FromResult(0U);
         }
     }
 }

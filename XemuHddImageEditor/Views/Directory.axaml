@@ -7,7 +7,7 @@
         x:Class="XemuHddImageEditor.Views.Directory">
 	<UserControl.DataTemplates>
 		<DataTemplate DataType="vm:FileViewModel">
-			<Border>
+			<Border Background="Transparent" MinWidth="100">
 				<Border.ContextMenu>
 					<ContextMenu>
 						<MenuItem Header="Rename" Command="{Binding Rename}" />
@@ -29,7 +29,7 @@
 			</Border>
 		</DataTemplate>
 		<DataTemplate DataType="vm:DirectoryViewModel">
-			<Border Background="Transparent">
+			<Border Background="Transparent" MinWidth="100">
 				<Border.ContextMenu>
 					<ContextMenu>
 						<MenuItem Header="Open" Command="{Binding Open}" />

@@ -4,10 +4,10 @@ using System.Runtime.InteropServices;
 namespace FatX.Net.Structures
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack=1)]
-    public struct DirectoryEntry
+    internal struct DirectoryEntry
     {
         public DirectoryEntryStatus Status;
-        public byte                 Attributes;
+        public Attributes          Attributes;
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst=Constants.FATX_MaxFilenameLen)]
         public byte[]               Filename;
