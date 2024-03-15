@@ -28,8 +28,7 @@ namespace XemuHddImageEditor.ViewModels
             set
             {
                 _selectedDirectory = value;
-                if (value == null)
-                    _selectedDirectoryPath = _selectedDirectory?.FullName ?? string.Empty;
+                _selectedDirectoryPath = _selectedDirectory?.FullName ?? string.Empty;
                 OnPropertyChanged(nameof(SelectedDirectory));
                 OnPropertyChanged(nameof(SelectedDirectoryPath));
                 SelectedDirectoryChanged?.Invoke(this, _selectedDirectoryPath);

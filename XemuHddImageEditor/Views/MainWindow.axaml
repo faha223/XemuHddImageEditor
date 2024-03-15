@@ -48,13 +48,12 @@
 			</MenuItem>
 		</Menu>
 		<Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="#161616" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2">
-			<DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Top">
-				<Button Margin="5" DockPanel.Dock="Left" IsEnabled="{Binding CanGoUp}" Command="{Binding GoToParentDirectory}">Go Up</Button>
-				<Panel DockPanel.Dock="Right" Margin="5">
-					<ComboBox PlaceholderText="Search" SelectedValue="{Binding SearchQuery}" DockPanel.Dock="Right" Margin="5,0,0,0" Width="320" />
-				</Panel>
-				<TextBox Text="{Binding SelectedDirectoryPath}" Margin="0,5" />
-			</DockPanel>
+			<StackPanel Margin="5">
+				<DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Top">
+					<Button Margin="0,0,5,0" DockPanel.Dock="Left" IsEnabled="{Binding CanGoUp}" Command="{Binding GoToParentDirectory}">Go Up</Button>
+					<TextBox Text="{Binding SelectedDirectoryPath, Mode=TwoWay}" />
+				</DockPanel>
+			</StackPanel>
 		</Border>
 		<Border Grid.Row="2" Grid.Column="0" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2" Background="#FF161616">
 			<views:DirectoryTree DataContext="{Binding DirectoryTreeVM}" />

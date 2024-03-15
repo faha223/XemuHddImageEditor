@@ -12,13 +12,25 @@ public class MainWindowViewModel : ViewModelBase
     public DirectoryViewModel? SelectedDirectory
     {
         get => DirectoryTreeVM.SelectedDirectory;
-        set { DirectoryTreeVM.SelectedDirectory = value; }
+        set 
+        {
+            DirectoryTreeVM.SelectedDirectory = value;
+            OnPropertyChanged(nameof(SelectedDirectory));
+            OnPropertyChanged(nameof(SelectedDirectoryPath));
+            OnPropertyChanged(nameof(CanGoUp));
+        }
     }
 
     public string SelectedDirectoryPath
     {
         get => DirectoryTreeVM.SelectedDirectoryPath;
-        set { DirectoryTreeVM.SelectedDirectoryPath = value; }
+        set 
+        {
+            DirectoryTreeVM.SelectedDirectoryPath = value;
+            OnPropertyChanged(nameof(SelectedDirectory));
+            OnPropertyChanged(nameof(SelectedDirectoryPath));
+            OnPropertyChanged(nameof(CanGoUp));
+        }
     }
 
     public string? SearchQuery { get; set; } = null;
