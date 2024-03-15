@@ -6,45 +6,78 @@
         <FluentTheme />
     </Application.Styles>
     <Application.Resources>
-        <Pen x:Key="ThickGreenLine" Brush="Green" Thickness="1.5" />
-        <Pen x:Key="ThinGreenLine" Brush="Green" Thickness="0.5" />
+        <SolidColorBrush x:Key="OpenFolderFillBack" Color="#FFD1BA7B" />
+        <SolidColorBrush x:Key="OpenFolderFillFront" Color="#70633f" />
+        <SolidColorBrush x:Key="ClosedFolderFillBack" Color="#FFD1BA7B" />
+        <LinearGradientBrush x:Key="ClosedFolderFillFront" StartPoint="0,0" EndPoint="0,14">
+            <GradientStop Offset="0" Color="#FFD1BA7B" />
+            <GradientStop Offset="0.85" Color="#FFD1BA7B" />
+            <GradientStop Offset="1" Color="#70633f" />
+        </LinearGradientBrush>
+        <Pen x:Key="ThickGreenLine" Brush="#FF007F00" Thickness="1.5" />
+        <Pen x:Key="ThinGreenLine" Brush="#FF007F00" Thickness="0.5" />
+        <Pen x:Key="ThickBlackLine" Brush="#FF0c0c0c" Thickness="1.5" />
+        <Pen x:Key="ThinBlackLine" Brush="#FF0c0c0c" Thickness="0.5" />
+        <SolidColorBrush x:Key="FileIconFill" Color="#FFDDDDDD" />
         <DrawingGroup x:Key="OpenFolderIcon">
-			<GeometryDrawing Geometry="m 0,13.5 a 0.5,0.5 0 0,0 0.98,0.141 L 3,4 L 19,4 L 15.8,13.64 a 0.5,0.5 0 0,1 -0.354,0.354 M 15.5,14 L 0.5,14 M 0,13.5 L 0,1.5 L 2,1.5 L 4,0 L 7,0 L 9,1.5 L 16,1.5 L 16,4"
-                             Brush="#FF0A0A0A" Pen="{StaticResource ThickGreenLine}" />
+            <!-- Back -->
+			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 0,0 0.98,0.141 L 3,4 L 16,4 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
+                             Brush="{StaticResource OpenFolderFillBack}" Pen="{StaticResource ThickBlackLine}" />
+            <!-- Front -->
+            <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.48,-0.359 L 3,4 L19,4 L 15.8,13.64 a 0.5,0.5 0 0,1 -0.354,0.354 Z"
+                             Brush="{StaticResource OpenFolderFillFront}" Pen="{StaticResource ThickBlackLine}" />
 		</DrawingGroup>
         <DrawingGroup x:Key="OpenFolderIconLarge">
-			<GeometryDrawing Geometry="m 0,13.5 a 0.5,0.5 0 0,0 0.98,0.141 L 3,4 L 19,4 L 15.8,13.64 a 0.5,0.5 0 0,1 -0.354,0.354 M 15.5,14 L 0.5,14 M 0,13.5 L 0,1.5 L 2,1.5 L 4,0 L 7,0 L 9,1.5 L 16,1.5 L 16,4"
-                             Brush="#FF0A0A0A" Pen="{StaticResource ThinGreenLine}" />
+            <!-- Back -->
+			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 0,0 0.98,0.141 L 3,4 L 16,4 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
+                             Brush="{StaticResource OpenFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
+            <!-- Front -->
+            <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.48,-0.359 L 3,4 L19,4 L 15.8,13.64 a 0.5,0.5 0 0,1 -0.354,0.354 Z"
+                             Brush="{StaticResource OpenFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
         <DrawingGroup x:Key="ClosedFolderIcon">
-			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 1,0 1,0 L 1,3 L 17,3 L 17,13.5 a 0.5 0.5 0 0,1 -0.5,0.5 M 16.5,14 L 0.5,14 M 0,13.5 L 0,1.5 L 2,1.5 L 4,0 L 7,0 L 9,1.5 L 16,1.5 L 16,3"
-                             Brush="#FF0A0A0A" Pen="{StaticResource ThickGreenLine}" />
+            <!-- Back -->
+			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 1,0 1,0 L 1,3 L 16,3 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
+                             Brush="{StaticResource ClosedFolderFillBack}" Pen="{StaticResource ThickBlackLine}" />
+            <!-- Front -->
+            <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.5,-0.5 L 1,3 L 17,3 L 17,13.5 a 0.5 0.5 0 0,1 -0.5,0.5 Z"
+                             Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThickBlackLine}" />
 		</DrawingGroup>
 		<DrawingGroup x:Key="ClosedFolderIconLarge">
-			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 1,0 1,0 L 1,3 L 17,3 L 17,13.5 a 0.5 0.5 0 0,1 -0.5,0.5 M 16.5,14 L 0.5,14 M 0,13.5 L 0,1.5 L 2,1.5 L 4,0 L 7,0 L 9,1.5 L 16,1.5 L 16,3"
-                             Brush="#FF0A0A0A" Pen="{StaticResource ThinGreenLine}" />
+            <!-- Back -->
+            <GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 1,0 1,0 L 1,3 L 16,3 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
+                             Brush="{StaticResource ClosedFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
+            <!-- Front -->
+            <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.5,-0.5 L 1,3 L 17,3 L 17,13.5 a 0.5 0.5 0 0,1 -0.5,0.5 Z"
+                             Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
         <DrawingGroup x:Key="FileIcon">
-            <GeometryDrawing Geometry="m 8,0 L 12,4 L 12,18 L 0,18 L 0,0 Z"
-                             Brush="#FF0A0A0A" Pen="{StaticResource ThickGreenLine}">
+            <!-- Page -->
+            <GeometryDrawing Geometry="M 8,0 L 12,4 L 12,18 L 0,18 L 0,0 Z"
+                             Brush="{StaticResource FileIconFill}" Pen="{StaticResource ThickGreenLine}">
             </GeometryDrawing>
-            <GeometryDrawing Geometry="m 8,0 L 8,4 L 12,4 Z" 
-                             Brush="#FF323232" Pen="{StaticResource ThickGreenLine}">
+            <!-- Folded Corner -->
+            <GeometryDrawing Geometry="M 8,0 L 8,4 L 12,4 Z" 
+                             Brush="#407f7f7f" Pen="{StaticResource ThickBlackLine}">
             </GeometryDrawing>
-            <GeometryDrawing Geometry="M 2,4 L 10,4 M 2,6 L 10,6 M 2,8 L 10,8 M 2,10 L 10,10 M 2,12 L 10,12 M 2,14 L 10,14 M 2,16 L 10,16" 
-                             Pen="{StaticResource ThickGreenLine}">
-            </GeometryDrawing> 
+            <!-- Lines -->
+            <!-- <GeometryDrawing Geometry="M 2,4 L 10,4 M 2,6 L 10,6 M 2,8 L 10,8 M 2,10 L 10,10 M 2,12 L 10,12 M 2,14 L 10,14 M 2,16 L 10,16"  -->
+            <!--                  Pen="{StaticResource ThickBlackLine}"> -->
+            <!-- </GeometryDrawing>  -->
         </DrawingGroup>
 		<DrawingGroup x:Key="FileIconLarge">
-            <GeometryDrawing Geometry="m 8,0 L 12,4 L 12,18 L 0,18 L 0,0 Z"
-                             Brush="#FF0A0A0A" Pen="{StaticResource ThinGreenLine}">
+            <!-- Page -->
+            <GeometryDrawing Geometry="M 8,0 L 12,4 L 12,18 L 0,18 L 0,0 Z"
+                             Brush="{StaticResource FileIconFill}" Pen="{StaticResource ThinBlackLine}">
 			</GeometryDrawing>
-            <GeometryDrawing Geometry="m 8,0 L 8,4 L 12,4 Z" 
-                             Brush="#FF323232" Pen="{StaticResource ThinGreenLine}">
+            <!-- Folded Corner -->
+            <GeometryDrawing Geometry="M 8,0 L 8,4 L 12,4 Z" 
+                             Brush="#407f7f7f" Pen="{StaticResource ThinBlackLine}">
             </GeometryDrawing>
-            <GeometryDrawing Geometry="M 2,4 L 10,4 M 2,6 L 10,6 M 2,8 L 10,8 M 2,10 L 10,10 M 2,12 L 10,12 M 2,14 L 10,14 M 2,16 L 10,16"
-                             Pen="{StaticResource ThinGreenLine}">
-            </GeometryDrawing>
+            <!-- Lines -->
+            <!-- <GeometryDrawing Geometry="M 2,4 L 10,4 M 2,6 L 10,6 M 2,8 L 10,8 M 2,10 L 10,10 M 2,12 L 10,12 M 2,14 L 10,14 M 2,16 L 10,16" -->
+            <!--                  Pen="{StaticResource ThinBlackLine}"> -->
+            <!-- </GeometryDrawing> -->
 		</DrawingGroup>
         <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent" />
@@ -73,9 +106,11 @@
         <ControlTheme x:Key="InvisibleListBox" TargetType="ListBox">
             <Setter Property="Template">
                 <ControlTemplate>
-                    <ItemsPresenter Name="PART_ItemsPresenter"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"
-                                    Margin="{TemplateBinding Padding}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                        <ItemsPresenter Name="PART_ItemsPresenter"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                        Margin="{TemplateBinding Padding}"/>
+                    </ScrollViewer>
                 </ControlTemplate>
             </Setter>
         </ControlTheme>
@@ -87,9 +122,11 @@
             </Setter>
             <Setter Property="Template">
                 <ControlTemplate>
-                    <ItemsPresenter Name="PART_ItemsPresenter"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}"
-                                    Margin="{TemplateBinding Padding}"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <ItemsPresenter Name="PART_ItemsPresenter"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}"
+                                        Margin="{TemplateBinding Padding}"/>
+                    </ScrollViewer>
                 </ControlTemplate>
             </Setter>
         </ControlTheme>
