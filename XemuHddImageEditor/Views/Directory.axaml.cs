@@ -1,4 +1,7 @@
-﻿using Avalonia.Controls;
+﻿using System.Security.Cryptography;
+using Avalonia.Controls;
+using Avalonia.Input;
+using XemuHddImageEditor.ViewModels;
 
 namespace XemuHddImageEditor.Views
 {
@@ -7,6 +10,17 @@ namespace XemuHddImageEditor.Views
         public Directory()
         {
             InitializeComponent();
+        }
+
+        public void DoubleClick(object sender, TappedEventArgs args)
+        {
+            if(sender is Control control)
+            {
+                if(control.DataContext is DirectoryViewModel vm)
+                {
+                    _ = vm.Open();
+                }
+            }
         }
     }
 }

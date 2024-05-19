@@ -29,7 +29,7 @@
 			</Border>
 		</DataTemplate>
 		<DataTemplate DataType="vm:DirectoryViewModel">
-			<Border Background="Transparent" MinWidth="100">
+			<Border Background="Transparent" MinWidth="100" DoubleTapped="DoubleClick">
 				<Border.ContextMenu>
 					<ContextMenu>
 						<MenuItem Header="Open" Command="{Binding Open}" />
