@@ -1,6 +1,3 @@
-using System.IO;
-using System.Runtime.InteropServices;
-
 namespace FatX.Net
 {
     public static class Constants
@@ -29,5 +26,19 @@ namespace FatX.Net
         public const long YPartitionSize = 0x02ee00000;
         public const long ZPartitionOffset = 0x5dc80000;
         public const long ZPartitionSize = 0x02ee00000;
+
+        // These are the known FAT entry values (FAT16)
+        public const ushort FATX_CLUSTER_AVAILABLE_16 = 0x0000;     // This cluster is available
+        public const ushort FATX_CLUSTER_RESERVED_16 = 0xFFF0;      // This cluster is reserved
+        public const ushort FATX_CLUSTER_BAD_16 = 0xFFF7;           // This cluster is bad
+        public const ushort FATX_CLUSTER_MEDIA_16 = 0xFFF8;         // This cluster is Media
+        public const ushort FATX_CLUSTER_END_16 = 0xFFFF;           // The end of the FAT table has been found
+
+        // These are the known FAT entry values (FAT32)
+        public const uint FATX_CLUSTER_AVAILABLE_32 = 0x00000000;   // This cluster is available
+        public const uint FATX_CLUSTER_RESERVED_32 = 0xFFFFFFF0;    // This cluster is reserved
+        public const uint FATX_CLUSTER_BAD_32 = 0xFFFFFFF7;         // This cluster is bad
+        public const uint FATX_CLUSTER_MEDIA_32 = 0xFFFFFFF8;       // This cluster is Media
+        public const uint FATX_CLUSTER_END_32 = 0xFFFFFFFF;         // The end of the FAT table has been found
     }   
 }

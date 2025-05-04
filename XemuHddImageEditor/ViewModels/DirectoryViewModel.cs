@@ -169,8 +169,12 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
         {
             foreach (var item in result)
             {
-                // TODO: Import the Files
+                using var fileStream = File.OpenRead(item);
+                await _directory.CreateFile(new FileInfo(item), fileStream);
             }
+            _directory.Refresh();
+            OnPropertyChanged(nameof(Files));
+            OnPropertyChanged(nameof(Contents));
         }
     }
 }

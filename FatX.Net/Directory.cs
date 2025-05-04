@@ -3,6 +3,8 @@ using FatX.Net.Helpers;
 using FatX.Net.Interfaces;
 using FatX.Net.Structures;
 using InteropHelpers;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -87,6 +89,12 @@ namespace FatX.Net
 
         private Task InitAsync()
         {
+            if(_directoryEntry.FirstCluster == 0)
+            {
+                _initialized = true;
+                return Task.CompletedTask;
+            }
+
             var cluster = _filesystem.GetCluster(_directoryEntry.FirstCluster);
             
             while(cluster.Position < cluster.Length)
@@ -112,6 +120,14 @@ namespace FatX.Net
             _initialized = true;
             Logger.Error("Got to the end of the cluster before the end of the Directory");
             return Task.CompletedTask;
+        }
+
+        public void Refresh()
+        {
+            lock(_initLock)
+            {
+                InitAsync().Wait();
+            }
         }
 
         public async Task PrintTree()
@@ -192,15 +208,17 @@ namespace FatX.Net
         #endregion Delete
 
         #region Create File
-        
+
         /// <summary>
         /// Create a new file inside this directory
         /// </summary>
         /// <param name="filename">The name of the fle to be created</param>
         /// <param name="content">The contents of the file</param>
         /// <returns>A File instance if one was able to be created. Null if not.</returns>
-        public Task<File?> CreateFile(string filename, Stream content)
+        public Task<File?> CreateFile(FileInfo file, Stream content)
         {
+            System.Diagnostics.Debug.WriteLine($"Creating File {file.Name} in directory {FullName}");
+            // TODO: Implement This
             return Task.FromResult<File?>(null);
         }
 
@@ -210,8 +228,8 @@ namespace FatX.Net
         /// <param name="filename">The name of the fle to be created</param>
         /// <param name="content">The contents of the file</param>
         /// <returns>A File instance if one was able to be created. Null if not.</returns>
-        public async Task<File?> CreateFile(string filename, byte[] content) =>
-            await CreateFile(filename, new MemoryStream(content));
+        public async Task<File?> CreateFile(FileInfo file, byte[] content) =>
+            await CreateFile(file, new MemoryStream(content));
 
         #endregion Create File
         
@@ -224,7 +242,10 @@ namespace FatX.Net
         /// <returns>a Directory instance if one was able to be created. Null if not.</returns>
         public Task<Directory?> CreateSubdirectory(string name)
         {
-            // TODO: Implement This
+            // TODO: Find an available cluster
+            // TODO: Write the End of Directory entry to the new cluster
+            // TODO: Find an available DirectoryEntry in the current directory
+            // TODO: Write a new DirectoryEntry into the available space for this new directory
             return Task.FromResult<Directory?>(null);
         }
         

@@ -1,4 +1,5 @@
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Input;
 using XemuHddImageEditor.Helpers;
 
 namespace XemuHddImageEditor.ViewModels;
@@ -70,5 +71,10 @@ public class MainWindowViewModel : ViewModelBase
         {
             desktop.MainWindow?.Close();
         }
+    }
+
+    public void Directory_Drop(object? sender, DragEventArgs e)
+    {   
+        System.Diagnostics.Debug.WriteLine($"Drop Event: {SelectedDirectoryPath}");
     }
 }

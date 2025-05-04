@@ -22,7 +22,7 @@ namespace FatX.Net
 
         public ushort FatType { get; private set; } = 16;
 
-        private readonly List<uint> _fatCache = [];
+        private Fat _fat { get; set; }
 
         public long ClusterOffset => FatOffset + FatSize;
         public long NumberOfClusters => ((Size - FatSize - Constants.FATX_FAT_Offset) / BytesPerCluster) + Constants.FATX_FAT_ReservedEntriesCount;
@@ -78,85 +78,28 @@ namespace FatX.Net
             Logger.Verbose($"  Root Cluster:        {_superblock.RootCluster}");
             Logger.Verbose($"  Cluster Offset:      0x{ClusterOffset:X8} bytes\n");
 
-            ReadFatCache();
+            _fat = new Fat(this, _stream);
 
             Initialized = true;
         }
 
-        internal ClusterStream GetCluster(uint cluster)
-        {
-            return new ClusterStream(this, _stream, cluster);
-        }
-
-        private void ReadFatCache()
+        private void WriteSuperblock()
         {
             lock(_stream)
             {
-                _stream.Seek(FatOffset, SeekOrigin.Begin);
-                long numEntries = NumberOfClusters + Constants.FATX_FAT_ReservedEntriesCount;
-                
-                if(FatType == 16)
-                {
-                    var buffer = new byte[numEntries * sizeof(ushort)];
-                    _stream.ReadExactly(buffer);
-                    for(var i = 0; i < numEntries; i++)
-                    {
-                        var entry = BitConverter.ToUInt16(buffer, i * sizeof(ushort));
-                        var entryAsUint = (uint)entry;
-                        if (entryAsUint >= 0x0000FFF0)
-                            entryAsUint |= 0xFFFF0000;
-                        _fatCache.Add(entryAsUint);
-                    }
-                }
-                else
-                {
-                    byte[] buffer = new byte[numEntries * sizeof(uint)];
-                    _stream.ReadExactly(buffer);
-                    
-                    for(int i = 0; i < numEntries; i++)
-                    {
-                        var entry = BitConverter.ToUInt32(buffer, i * sizeof(uint));
-                        _fatCache.Add(entry);
-                    }
-                }
+                _stream.Seek(Offset, SeekOrigin.Begin);
+                _stream.Write(_superblock);
             }
         }
 
-        internal uint GetNextCluster(uint cluster)
-        {
-            if(cluster >= _fatCache.Count)
-                throw new InvalidOperationException("index out of range");
+        internal ClusterStream GetCluster(uint cluster) =>
+            new (this, _stream, cluster);
 
-            return _fatCache[(int)cluster];
-        }
+        internal uint GetNextCluster(uint cluster) =>
+            _fat.GetNextCluster(cluster);
 
-        internal void FreeClusters(ref DirectoryEntry entry)
-        {
-            long bytesFreed = 0;
-            var cluster = entry.FirstCluster;
-            var fileSize = Math.Min(1, entry.FileSize); // Directories have a file size of 0 but they use at least 1 cluster
-            while(bytesFreed < fileSize)
-            {
-                FreeCluster(cluster);
-                cluster = GetNextCluster(cluster);
-                bytesFreed += BytesPerCluster;
-            }
-        }
-
-        internal void FreeCluster(uint cluster)
-        {
-            byte[] newEntry = [ 0x00, 0x00, 0x00, 0x00 ];
-            var fatEntrySize = this.FatType == 16 ? sizeof(ushort) : sizeof(uint);
-            var fatOffset = fatEntrySize * cluster;
-
-            // Zero out the entry
-            lock(_stream)
-            {
-                _stream.Seek(FatOffset + fatOffset, SeekOrigin.Begin);
-                _stream.Write(newEntry, 0, fatEntrySize);
-                _stream.Flush();
-            }
-        }
+        internal void FreeClusters(ref DirectoryEntry entry) =>
+            _fat.FreeClusters(ref entry);
 
         private Directory? _rootDirectory = null;
         public Task<Directory> GetRootDirectory()
@@ -199,8 +142,24 @@ namespace FatX.Net
 
         public Task<uint> FindAvailableCluster()
         {
-            // TODO: Implement This
-            return Task.FromResult(0U);
+            return Task.FromResult(_fat.FindAvailableCluster());
+        }
+
+        public Task ReserveCluster(uint cluster)
+        {
+            // Reserve the cluster by marking it with FATX_CLUSTER_END
+            _fat.WriteEntry(cluster, Constants.FATX_CLUSTER_END_32);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// This function reserves a number of clusters 
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
+        public Task<uint> AllocateSpace(long length)
+        {
+            return Task.FromResult(_fat.ReserveSpace(length));
         }
     }
 }

@@ -19,7 +19,8 @@ namespace FatX.Net
 
         private void Load(Stream stream)
         {
-            // FATX Drives don't have a Master Boot Record, so no point in looking for one
+            // Normal FATX Drives don't have a Master Boot Record, so no point in looking for one
+            // TODO: Look for a Master Boot Record, and only fall back to these default values if one is not found
             Logger.Verbose("Loading Partition C");
             Partitions.Add(new Partition(stream, 'C', Constants.CPartitionOffset, Constants.CPartitionSize));
             Logger.Verbose("Loading Partition E");
