@@ -102,15 +102,15 @@ namespace FatX.Net
         {
             if(numClusters > 0)
             {
-                byte[] valueBuffer = [0, 0];
+                byte[] valueBuffer = [0, 0, 0, 0];
                 var clustersFound = new List<uint>(numClusters);
                 lock(UnderlyingStream)
                 {
                     UnderlyingStream.Seek(Offset, SeekOrigin.Begin);
                     for(uint index = 0; index < Size / BytesPerFatEntry; index++)
                     {
-                        UnderlyingStream.Read(valueBuffer);
-                        ushort entry = BitConverter.ToUInt16(valueBuffer);
+                        UnderlyingStream.Read(valueBuffer, 0, valueBuffer.Length);
+                        uint entry = BitConverter.ToUInt32(valueBuffer);
                         if(entry == Constants.FATX_CLUSTER_AVAILABLE_32)
                         {
                             clustersFound.Add(index);
@@ -131,19 +131,15 @@ namespace FatX.Net
         public uint ReserveSpace(long spaceToReserve)
         {
             int numClusters = (int)Math.Max(1, (spaceToReserve + _filesystem.BytesPerCluster - 1) / _filesystem.BytesPerCluster);
-            var clusters = FindAvailableClusters(numClusters);
+            var clusters = FindAvailableClusters(numClusters).ToList();
+            var valuesToWrite = clusters.Skip(1)
+                .Append(Constants.FATX_CLUSTER_END_32)
+                .ToList();
 
             // Build the Chain to reserve the space
-            uint lastEntry = Constants.FATX_CLUSTER_END_32;
-            foreach(var entry in clusters)
-            {
-                if(lastEntry != Constants.FATX_CLUSTER_END_32)
-                {
-                    WriteEntry(lastEntry, entry);
-                }
-                lastEntry = entry;
-            }
-            WriteEntry(lastEntry, Constants.FATX_CLUSTER_END_32);
+            Console.WriteLine($"Reserving space for {numClusters} clusters: {string.Join(", ", clusters)}");
+            for(int i = 0 ;i < clusters.Count; i++)
+                WriteEntry(clusters[i], valuesToWrite[i]);
 
             return clusters.First();
         }
@@ -194,7 +190,7 @@ namespace FatX.Net
                 WriteEntry(chainCluster, newCluster);
 
                 // Mark the new cluster as the end of the chain
-                WriteEntry(newCluster, Constants.FATX_CLUSTER_END_32);
+                WriteEntry(newCluster, Constants.FATX_CLUSTER_RESERVED_32);
             }
             return newCluster;
         }

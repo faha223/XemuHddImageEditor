@@ -215,11 +215,98 @@ namespace FatX.Net
         /// <param name="filename">The name of the fle to be created</param>
         /// <param name="content">The contents of the file</param>
         /// <returns>A File instance if one was able to be created. Null if not.</returns>
-        public Task<File?> CreateFile(FileInfo file, Stream content)
+        public async Task<File?> CreateFile(FileInfo file, Stream content)
         {
-            System.Diagnostics.Debug.WriteLine($"Creating File {file.Name} in directory {FullName}");
-            // TODO: Implement This
-            return Task.FromResult<File?>(null);
+            Logger.Verbose($"Creating File {file.Name} in directory {FullName}");
+            var fileSize = content.Length;
+            Logger.Verbose($"File size is {fileSize} bytes");
+            var requiredClusters = (uint)((fileSize + _filesystem.BytesPerCluster - 1) / _filesystem.BytesPerCluster);
+            Logger.Verbose($"File requires {requiredClusters} clusters");
+            var clusterId = await _filesystem.AllocateSpace(requiredClusters);
+            if(clusterId == Constants.FATX_CLUSTER_END_32)
+            {
+                Logger.Error($"Not enough space to create file {file.Name} in directory {FullName}");
+                return null;
+            }
+
+            while(content.Position < content.Length)
+            {
+                using var clusterStream = _filesystem.GetCluster(clusterId);
+                var bytesToWrite = (int)Math.Min(_filesystem.BytesPerCluster, content.Length - content.Position);
+                content.CopyTo(clusterStream, bytesToWrite);
+                clusterStream.Flush();
+
+                if(content.Position < content.Length)
+                {
+                    clusterId = _filesystem.GetNextCluster(clusterId);
+                    if(clusterId == Constants.FATX_CLUSTER_END_32)
+                    {
+                        Logger.Error($"Not enough space to create file {file.Name} in directory {FullName}");
+                        return null;
+                    }
+                }
+            }
+
+            DatePacker.Pack(file.CreationTimeUtc, out var creationDateBytes, out var creationTimeBytes);
+            DatePacker.Pack(file.LastWriteTimeUtc, out var writeDateBytes, out var writeTimeBytes);
+            DatePacker.Pack(file.LastAccessTimeUtc, out var accessDateBytes, out var accessTimeBytes);
+            var directoryEntry = new DirectoryEntry()
+            {
+                Status = (DirectoryEntryStatus)file.Name.Length,
+                Filename = new byte[Constants.FATX_MaxFilenameLen],
+                Attributes = 0,
+                CreatedDate = creationDateBytes,
+                CreatedTime = creationTimeBytes,
+                ModifiedDate = writeDateBytes,
+                ModifiedTime = writeTimeBytes,
+                AccessedDate = accessDateBytes,
+                AccessedTime = accessTimeBytes,
+                FirstCluster = clusterId,
+                FileSize = (uint)fileSize
+            };
+            Array.Copy(Encoding.ASCII.GetBytes(file.Name), directoryEntry.Filename, file.Name.Length);
+            directoryEntry.Filename[file.Name.Length] = 0; // Null terminator for the filename
+
+            // Find an available DirectoryEntry in the current directory
+            Logger.Verbose($"Finding an available DirectoryEntry in directory {FullName} for new file {file.Name}");
+            using var directoryClusterStream = _filesystem.GetCluster(Cluster);
+            for(int offset = 0; offset < directoryClusterStream.Length; offset += Marshal.SizeOf<DirectoryEntry>())
+            {
+                directoryClusterStream.Seek(offset, SeekOrigin.Begin);
+                var entry = directoryClusterStream.Read<DirectoryEntry>();
+                if (entry.Status == DirectoryEntryStatus.Available || 
+                    entry.Status == DirectoryEntryStatus.EndOfDirMarker)
+                {
+                    Logger.Verbose($"Found an available DirectoryEntry at offset {offset}");
+                    
+                    // This offset is where we'll write the DirectoryEntry for the new file
+                    directoryClusterStream.Seek(offset, SeekOrigin.Begin);
+                    directoryClusterStream.Write(directoryEntry);
+
+                    if(entry.Status == DirectoryEntryStatus.EndOfDirMarker)
+                    {
+                        Logger.Verbose($"Available DirectoryEntry was an End of Directory marker, so writing a new End of Directory marker after the new file");
+                        if(directoryClusterStream.Position < directoryClusterStream.Length)
+                            directoryClusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
+                        else
+                        {
+                            // Add another cluster to this cluster chain, and write the new End of Directory marker there
+                            uint newClusterId = _filesystem.AddClusterToChain(Cluster);
+                            if(newClusterId != 0)
+                            {
+                                using var newClusterStream = _filesystem.GetCluster(newClusterId);
+                                newClusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
+                            }
+                        }
+                    }
+                    await directoryClusterStream.FlushAsync();
+                    var newFile = new File(this, _filesystem, directoryEntry, directoryClusterStream.Position - Marshal.SizeOf<DirectoryEntry>());
+                    Files.Add(newFile);
+                    return newFile;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -240,13 +327,88 @@ namespace FatX.Net
         /// </summary>
         /// <param name="name">The name of the subdirectory that is to be created</param>
         /// <returns>a Directory instance if one was able to be created. Null if not.</returns>
-        public Task<Directory?> CreateSubdirectory(string name)
+        public async Task<Directory?> CreateSubdirectory(string name)
         {
-            // TODO: Find an available cluster
-            // TODO: Write the End of Directory entry to the new cluster
-            // TODO: Find an available DirectoryEntry in the current directory
-            // TODO: Write a new DirectoryEntry into the available space for this new directory
-            return Task.FromResult<Directory?>(null);
+            // Find an available cluster
+            Logger.Verbose($"Finding an avalable cluster for new subdirectory {name} in directory {FullName}");
+            var clusterId = await _filesystem.AllocateSpace(1);
+            if(clusterId == Constants.FATX_CLUSTER_END_32)
+            {
+                Logger.Error($"Not enough space to create subdirectory {name} in directory {FullName}");
+                return null;
+            }
+            Logger.Verbose($"Found an available cluster at ClusterId {clusterId} for new subdirectory {name}");
+
+            // Write the 'End of Directory' entry to the new cluster
+            Logger.Verbose($"Getting cluster stream for clusterId {clusterId} to write End of Directory entry for new subdirectory {name}");
+            var subdirectoryCluster = _filesystem.GetCluster(clusterId);
+
+            Logger.Verbose($"Packing current date and time for the creation, modification, and access times of the new subdirectory.");
+            DatePacker.Pack(DateTime.Now, out var dateBytes, out var timeBytes);
+            Logger.Verbose($"Writing End of Directory entry to cluster {clusterId} for new subdirectory {name}");
+            subdirectoryCluster.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
+            
+            Logger.Verbose($"Creating DirectoryEntry for new subdirectory {name}");
+            var directoryEntry = new DirectoryEntry()
+            {
+                Status = (DirectoryEntryStatus)name.Length,
+                Filename = new byte[Constants.FATX_MaxFilenameLen],
+                Attributes = Attributes.Directory,
+                CreatedDate = dateBytes,
+                CreatedTime = timeBytes,
+                ModifiedDate = dateBytes,
+                ModifiedTime = timeBytes,
+                AccessedDate = dateBytes,
+                AccessedTime = timeBytes,
+                FirstCluster = clusterId,
+                FileSize = 0
+            };
+
+            Array.Copy(Encoding.ASCII.GetBytes(name), directoryEntry.Filename, name.Length);
+            directoryEntry.Filename[name.Length] = 0; // Null terminator for the filename
+
+            // Find an available DirectoryEntry in the current directory
+            Logger.Verbose($"Finding an available DirectoryEntry in directory {FullName} for new subdirectory {name}");
+            using var clusterStream = _filesystem.GetCluster(Cluster);
+            for(int offset = 0; offset < clusterStream.Length; offset += Marshal.SizeOf<DirectoryEntry>())
+            {
+                clusterStream.Seek(offset, SeekOrigin.Begin);
+                var entry = clusterStream.Read<DirectoryEntry>();
+                if (entry.Status == DirectoryEntryStatus.Available || 
+                    entry.Status == DirectoryEntryStatus.EndOfDirMarker)
+                {
+                    Logger.Verbose($"Found an available DirectoryEntry at offset {offset}");
+                    
+                    // This offset is where we'll write the DirectoryEntry for the new Subdirectory
+                    clusterStream.Seek(offset, SeekOrigin.Begin);
+                    clusterStream.Write(directoryEntry);
+
+                    if(entry.Status == DirectoryEntryStatus.EndOfDirMarker)
+                    {
+                        Logger.Verbose($"Available DirectoryEntry was an End of Directory marker, so writing a new End of Directory marker after the new subdirectory");
+                        if(clusterStream.Position < clusterStream.Length)
+                            clusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
+                        else
+                        {
+                            // Add another cluster to this cluster chain, and write the new End of Directory marker there
+                            uint newClusterId = _filesystem.AddClusterToChain(Cluster);
+                            if(newClusterId != 0)
+                            {
+                                using var newClusterStream = _filesystem.GetCluster(newClusterId);
+                                newClusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
+                            }
+                        }
+                    }
+                    await clusterStream.FlushAsync();
+                    var newDirectory = new Directory(this, _filesystem, directoryEntry, clusterStream.Position - Marshal.SizeOf<DirectoryEntry>());
+                    Subdirectories.Add(newDirectory);
+                    return newDirectory;
+                }
+            }
+            Logger.Error($"No available directoryEntry could be found. Deleting the subdirectory");
+            _filesystem.FreeClusters(ref directoryEntry);
+            // Directory Entry is full. Add a cluster to this directory entry and add the new DirectoryEntry to that
+            return null;
         }
         
         #endregion Create Subdirectory

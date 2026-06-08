@@ -61,7 +61,7 @@ namespace FatX.Net
 
             /* Round FAT size up to nearest 4k boundary. */
             if (FatSize % 4096 != 0)
-                FatSize += 4096 - FatSize % 4096;
+                FatSize += 4096 - (FatSize % 4096);
 
             Logger.Verbose("Partition Info:");
             Logger.Verbose($"  Partition Offset:    0x{Offset:X16} bytes");
@@ -100,6 +100,9 @@ namespace FatX.Net
 
         internal void FreeClusters(ref DirectoryEntry entry) =>
             _fat.FreeClusters(ref entry);
+
+        internal uint AddClusterToChain(uint cluster) =>
+            _fat.AddClusterToChain(cluster);
 
         private Directory? _rootDirectory = null;
         public Task<Directory> GetRootDirectory()
@@ -155,8 +158,10 @@ namespace FatX.Net
         /// <summary>
         /// This function reserves a number of clusters 
         /// </summary>
-        /// <param name="length"></param>
-        /// <returns></returns>
+        /// <param name="length">The amount of space to reserve in bytes</param>
+        /// <returns>The cluster index of the first cluster in the chain. If there were not 
+        /// enough clusters available, then Constants.FATX_CLUSTER_END_32 is returned instead.
+        /// </returns>
         public Task<uint> AllocateSpace(long length)
         {
             return Task.FromResult(_fat.ReserveSpace(length));

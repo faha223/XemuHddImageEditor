@@ -3,7 +3,7 @@ using FatX.Net.Structures;
 
 namespace FatX.Net
 {
-    public abstract class Substream(Stream underlyingStream, long offset, long size) : Stream
+    public class Substream(Stream underlyingStream, long offset, long size) : Stream
     {
         public Stream UnderlyingStream { get; init; } = underlyingStream;
         public long Offset { get; init; } = offset;
@@ -77,6 +77,7 @@ namespace FatX.Net
 
         public override void Write(byte[] buffer, int offset, int count)
         {
+            Console.WriteLine($"[DEBUG] Attempting to write {count} bytes to Substream at position {Position} with length {Length}");
             if (count > Length - Position)
                 throw new Exception("Not Enough Space Remaining in Substream");
 

@@ -2,29 +2,35 @@
 {
     internal static class Logger
     {
+        private static void WriteToLog(string message)
+        {
+            //System.Diagnostics.Debug.WriteLine(message);
+            Console.WriteLine(message);
+        }
+
         public static void Debug(string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] {message}");
+            WriteToLog($"[DEBUG] {message}");
         }
 
         public static void Error(string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[ERROR] {message}");
+            WriteToLog($"[ERROR] {message}");
         }
 
         public static void Warning(string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[WARNING] {message}");
+            WriteToLog($"[WARNING] {message}");
         }
 
         public static void Verbose(string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[VERBOSE] {message}");
+            WriteToLog($"[VERBOSE] {message}");
         }
 
         public static void Information(string message)
         {
-            System.Diagnostics.Debug.WriteLine($"[INFO] {message}");
+            WriteToLog($"[INFO] {message}");
         }
     }
 

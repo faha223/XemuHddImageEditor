@@ -10,9 +10,11 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
     public MainWindow()
     {
-        InitializeComponent();
+        DataContext = new MainWindowViewModel();
 
-        this.AddHandler(DragDrop.DropEvent, Drop);
+        InitializeComponent();
+        
+        AddHandler(DragDrop.DropEvent, Drop);
     }
 
     private void Drop(object? sender, DragEventArgs e)

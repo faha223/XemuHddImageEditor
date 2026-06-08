@@ -35,10 +35,11 @@
 			</Expander>
         </DataTemplate>
     </Window.DataTemplates>
-
+	
 	<Design.DataContext>
         <vm:MainWindowViewModel/>
     </Design.DataContext>
+
 	<Grid RowDefinitions="auto,120,*" ColumnDefinitions="240,*">
 		<Menu Grid.Row="0" Grid.ColumnSpan="32">
 			<MenuItem Header="_File">
