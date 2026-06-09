@@ -144,7 +144,7 @@ public class FatXTests
     public void TestCreateFile()
     {
         // Generate a test image
-        string testFileName = "/Users/fred/Xemu/BIOS/mcpx_1.0.bin";
+        string testFileName = "/Users/fred/Xemu/BIOS/Complex 4627 Retail 1.03.bin";
         var fileInfo = new FileInfo(testFileName);
         string testImagePath = nameof(TestCreateFile) + ".img";
         TestData.GenerateTestImage(testImagePath);
@@ -175,7 +175,7 @@ public class FatXTests
             rootDirectory.PrintTree();
             Assert.Single(rootDirectory.Files);
             var file = rootDirectory.Files[0];
-            Assert.Equal("mcpx_1.0.bin", file.Name);
+            Assert.Equal(fileInfo.Name, file.Name);
             file.Extract("temp.bin").Wait();
             Assert.True(System.IO.File.ReadAllBytes("temp.bin").SequenceEqual(System.IO.File.ReadAllBytes(testFileName)));
         }

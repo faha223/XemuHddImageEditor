@@ -126,6 +126,10 @@ namespace FatX.Net
 
         public async Task Extract(string filename)
         {
+            if(filename.StartsWith("file:///"))
+                filename = new Uri(filename).LocalPath;
+                
+            Logger.Verbose($"Extracting file {FullName} to {filename}");
             using var outStream = new FileStream(filename, FileMode.Create);
 
             long totalBytesRead = 0;
@@ -145,7 +149,7 @@ namespace FatX.Net
                         if(nextCluster == null)
                         {
                             // Cannot read file
-                            Logger.Error($"Reading File {FullName}: Premature EOF");
+                            Logger.Error($"Reading File {FullName}: Premature EOF (expected {FileSize} bytes, got {totalBytesRead} bytes)");
                             break;
                         }
                         cluster = nextCluster;
@@ -154,6 +158,7 @@ namespace FatX.Net
             }
             outStream.Flush();
             outStream.Close();
+            Logger.Verbose($"Finished extracting file {FullName} (extracted {totalBytesRead} bytes)");
         }
 
         public Task Delete()

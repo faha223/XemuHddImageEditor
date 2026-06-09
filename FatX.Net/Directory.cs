@@ -220,25 +220,33 @@ namespace FatX.Net
             Logger.Verbose($"Creating File {file.Name} in directory {FullName}");
             var fileSize = content.Length;
             Logger.Verbose($"File size is {fileSize} bytes");
+            Logger.Verbose($"Bytes per Cluster: {_filesystem.BytesPerCluster}");
             var requiredClusters = (uint)((fileSize + _filesystem.BytesPerCluster - 1) / _filesystem.BytesPerCluster);
             Logger.Verbose($"File requires {requiredClusters} clusters");
-            var clusterId = await _filesystem.AllocateSpace(requiredClusters);
-            if(clusterId == Constants.FATX_CLUSTER_END_32)
+            var firstClusterId = await _filesystem.AllocateSpace(fileSize);
+            if(firstClusterId == Constants.FATX_CLUSTER_END_32)
             {
                 Logger.Error($"Not enough space to create file {file.Name} in directory {FullName}");
                 return null;
             }
 
+            uint clusterId = firstClusterId;
             while(content.Position < content.Length)
             {
-                using var clusterStream = _filesystem.GetCluster(clusterId);
-                var bytesToWrite = (int)Math.Min(_filesystem.BytesPerCluster, content.Length - content.Position);
-                content.CopyTo(clusterStream, bytesToWrite);
-                clusterStream.Flush();
+                var buffer = new byte[_filesystem.BytesPerCluster];
+                using (var clusterStream = _filesystem.GetCluster(clusterId))
+                {
+                    var bytesToWrite = (int)Math.Min(_filesystem.BytesPerCluster, content.Length - content.Position);
+                    Logger.Verbose($"Writing {bytesToWrite} bytes to cluster {clusterId}");
+                    content.Read(buffer, 0, bytesToWrite);
+                    clusterStream.Write(buffer, 0, bytesToWrite);
+                    clusterStream.Flush();
+                }
 
                 if(content.Position < content.Length)
                 {
                     clusterId = _filesystem.GetNextCluster(clusterId);
+                    Logger.Verbose($"Next cluster is {clusterId}");
                     if(clusterId == Constants.FATX_CLUSTER_END_32)
                     {
                         Logger.Error($"Not enough space to create file {file.Name} in directory {FullName}");
@@ -261,9 +269,10 @@ namespace FatX.Net
                 ModifiedTime = writeTimeBytes,
                 AccessedDate = accessDateBytes,
                 AccessedTime = accessTimeBytes,
-                FirstCluster = clusterId,
+                FirstCluster = firstClusterId,
                 FileSize = (uint)fileSize
             };
+
             Array.Copy(Encoding.ASCII.GetBytes(file.Name), directoryEntry.Filename, file.Name.Length);
             directoryEntry.Filename[file.Name.Length] = 0; // Null terminator for the filename
 

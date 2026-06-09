@@ -4,8 +4,8 @@
     {
         private static void WriteToLog(string message)
         {
-            //System.Diagnostics.Debug.WriteLine(message);
-            Console.WriteLine(message);
+            System.Diagnostics.Debug.WriteLine(message);
+            //Console.WriteLine(message);
         }
 
         public static void Debug(string message)
