@@ -162,19 +162,58 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
         }
     }
 
+    private void Refresh()
+    {
+        _directory.Refresh();
+        _files = null;
+        _subdirectories = null;
+        OnPropertyChanged(nameof(Files));
+        OnPropertyChanged(nameof(Subdirectories));
+        OnPropertyChanged(nameof(Contents));
+    }
+
+    public async Task CreateDirectory()
+    {
+        var dialog = new CreateSubdirectoryModal();
+        await DialogHelpers.ShowDialog<CreateSubdirectoryModalViewModel?>(dialog);
+
+        if (dialog.ViewModel.DialogResult)
+        {
+            await _directory.CreateSubdirectory(dialog.ViewModel.Name);
+            Refresh();
+        }
+    }
+
     public async Task ImportFiles()
     {
         var result = await DialogHelpers.OpenFilesDialog();
         if (result != null)
         {
-            foreach (var item in result)
+            await ImportFiles(_directory, result ?? []);
+            Refresh();
+        }
+    }
+
+    private static async Task ImportFiles(Directory directory, IEnumerable<string> paths)
+    {
+        foreach (var item in paths)
+        {
+            FileAttributes attr = File.GetAttributes(item);
+            if(attr.HasFlag(FileAttributes.Directory))
+            {
+                var di = new DirectoryInfo(item);
+                var subdir = await directory.CreateSubdirectory(di.Name);
+                if(subdir != null)
+                {
+                    var subdirPaths = System.IO.Directory.GetFiles(di.FullName);
+                    await ImportFiles(subdir, subdirPaths);
+                }
+            }
+            else
             {
                 using var fileStream = File.OpenRead(item);
-                await _directory.CreateFile(new FileInfo(item), fileStream);
+                await directory.CreateFile(new FileInfo(item), fileStream);
             }
-            _directory.Refresh();
-            OnPropertyChanged(nameof(Files));
-            OnPropertyChanged(nameof(Contents));
         }
     }
 }

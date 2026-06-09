@@ -95,6 +95,9 @@ namespace FatX.Net
                 return Task.CompletedTask;
             }
 
+            _files.Clear();
+            _subdirectories.Clear();
+
             var cluster = _filesystem.GetCluster(_directoryEntry.FirstCluster);
             
             while(cluster.Position < cluster.Length)

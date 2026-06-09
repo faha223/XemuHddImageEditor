@@ -52,7 +52,10 @@
 			</Border>
 		</DataTemplate>
 	</UserControl.DataTemplates>
-	<Border Background="Transparent" Margin="0,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+	<Border Background="Transparent" 
+			Margin="0,0,0,0" 
+			HorizontalAlignment="Stretch" 
+			VerticalAlignment="Stretch">
 		<Border.ContextMenu>
 			<ContextMenu>
 				<MenuItem Header="New Folder" Command="{Binding CreateDirectory}" />

@@ -1,4 +1,5 @@
 using System.Reflection.Metadata;
+using FatX.Net.Helpers;
 using FatX.Net.Structures;
 
 namespace FatX.Net
@@ -137,7 +138,7 @@ namespace FatX.Net
                 .ToList();
 
             // Build the Chain to reserve the space
-            Console.WriteLine($"Reserving space for {numClusters} clusters: {string.Join(", ", clusters)}");
+            Logger.Debug($"Reserving space for {numClusters} clusters: {string.Join(", ", clusters)}");
             for(int i = 0 ;i < clusters.Count; i++)
                 WriteEntry(clusters[i], valuesToWrite[i]);
 
