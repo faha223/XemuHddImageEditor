@@ -191,11 +191,18 @@ namespace FatX.Net
             if (Parent == null)
                 return;
 
-            foreach (var subdirectory in Subdirectories)
+            Console.WriteLine($"Deleting directory {FullName}");
+
+            await InitAsync();
+            // Make a copy to avoid modifying the collection while iterating
+            List<Directory> subdirectoriesCopy = [..Subdirectories];
+            foreach (var subdirectory in subdirectoriesCopy)
                 await subdirectory.Delete();
             Subdirectories.Clear();
 
-            foreach (var file in Files)
+            // Make a copy to avoid modifying the collection while iterating
+            List<File> filesCopy = [..Files];
+            foreach (var file in filesCopy)
                 await file.Delete();
             Files.Clear();
 
@@ -204,6 +211,8 @@ namespace FatX.Net
 
             // You can't delete a root directory
             Parent.Subdirectories.Remove(this);
+
+            Console.WriteLine($"Finished deleting directory {FullName}");
         }
 
         #endregion Delete
@@ -280,40 +289,35 @@ namespace FatX.Net
             // Find an available DirectoryEntry in the current directory
             Logger.Verbose($"Finding an available DirectoryEntry in directory {FullName} for new file {file.Name}");
             using var directoryClusterStream = _filesystem.GetCluster(Cluster);
-            for(int offset = 0; offset < directoryClusterStream.Length; offset += Marshal.SizeOf<DirectoryEntry>())
+            (int offset, DirectoryEntry? entry) = FindAvailableDirectoryEntryOffset(directoryClusterStream);
+            if (offset < directoryClusterStream.Length && entry.HasValue)
             {
+                Logger.Verbose($"Found an available DirectoryEntry at offset {offset}");
+                
+                // This offset is where we'll write the DirectoryEntry for the new file
                 directoryClusterStream.Seek(offset, SeekOrigin.Begin);
-                var entry = directoryClusterStream.Read<DirectoryEntry>();
-                if (entry.Status == DirectoryEntryStatus.Available || 
-                    entry.Status == DirectoryEntryStatus.EndOfDirMarker)
-                {
-                    Logger.Verbose($"Found an available DirectoryEntry at offset {offset}");
-                    
-                    // This offset is where we'll write the DirectoryEntry for the new file
-                    directoryClusterStream.Seek(offset, SeekOrigin.Begin);
-                    directoryClusterStream.Write(directoryEntry);
+                directoryClusterStream.Write(directoryEntry);
 
-                    if(entry.Status == DirectoryEntryStatus.EndOfDirMarker)
+                if(entry.Value.Status == DirectoryEntryStatus.EndOfDirMarker)
+                {
+                    Logger.Verbose($"Available DirectoryEntry was an End of Directory marker, so writing a new End of Directory marker after the new file");
+                    if(directoryClusterStream.Position < directoryClusterStream.Length)
+                        directoryClusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
+                    else
                     {
-                        Logger.Verbose($"Available DirectoryEntry was an End of Directory marker, so writing a new End of Directory marker after the new file");
-                        if(directoryClusterStream.Position < directoryClusterStream.Length)
-                            directoryClusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
-                        else
+                        // Add another cluster to this cluster chain, and write the new End of Directory marker there
+                        uint newClusterId = _filesystem.AddClusterToChain(Cluster);
+                        if(newClusterId != 0)
                         {
-                            // Add another cluster to this cluster chain, and write the new End of Directory marker there
-                            uint newClusterId = _filesystem.AddClusterToChain(Cluster);
-                            if(newClusterId != 0)
-                            {
-                                using var newClusterStream = _filesystem.GetCluster(newClusterId);
-                                newClusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
-                            }
+                            using var newClusterStream = _filesystem.GetCluster(newClusterId);
+                            newClusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
                         }
                     }
-                    await directoryClusterStream.FlushAsync();
-                    var newFile = new File(this, _filesystem, directoryEntry, directoryClusterStream.Position - Marshal.SizeOf<DirectoryEntry>());
-                    Files.Add(newFile);
-                    return newFile;
                 }
+                await directoryClusterStream.FlushAsync();
+                var newFile = new File(this, _filesystem, directoryEntry, directoryClusterStream.Position - Marshal.SizeOf<DirectoryEntry>());
+                Files.Add(newFile);
+                return newFile;
             }
 
             return null;
@@ -380,41 +384,36 @@ namespace FatX.Net
             // Find an available DirectoryEntry in the current directory
             Logger.Verbose($"Finding an available DirectoryEntry in directory {FullName} for new subdirectory {name}");
             using var clusterStream = _filesystem.GetCluster(Cluster);
-            for(int offset = 0; offset < clusterStream.Length; offset += Marshal.SizeOf<DirectoryEntry>())
+            (int offset, DirectoryEntry? entry) = FindAvailableDirectoryEntryOffset(clusterStream);
+            if(offset < clusterStream.Length && entry.HasValue)
             {
+                // This offset is where we'll write the DirectoryEntry for the new Subdirectory
                 clusterStream.Seek(offset, SeekOrigin.Begin);
-                var entry = clusterStream.Read<DirectoryEntry>();
-                if (entry.Status == DirectoryEntryStatus.Available || 
-                    entry.Status == DirectoryEntryStatus.EndOfDirMarker)
-                {
-                    Logger.Verbose($"Found an available DirectoryEntry at offset {offset}");
-                    
-                    // This offset is where we'll write the DirectoryEntry for the new Subdirectory
-                    clusterStream.Seek(offset, SeekOrigin.Begin);
-                    clusterStream.Write(directoryEntry);
+                clusterStream.Write(directoryEntry);
 
-                    if(entry.Status == DirectoryEntryStatus.EndOfDirMarker)
+                if(entry.Value.Status == DirectoryEntryStatus.EndOfDirMarker)
+                {
+                    Logger.Verbose($"Available DirectoryEntry was an End of Directory marker, so writing a new End of Directory marker after the new subdirectory");
+                    if(clusterStream.Position < clusterStream.Length)
+                        clusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
+                    else
                     {
-                        Logger.Verbose($"Available DirectoryEntry was an End of Directory marker, so writing a new End of Directory marker after the new subdirectory");
-                        if(clusterStream.Position < clusterStream.Length)
-                            clusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
-                        else
+                        // Add another cluster to this cluster chain, and write the new End of Directory marker there
+                        uint newClusterId = _filesystem.AddClusterToChain(Cluster);
+                        if(newClusterId != 0)
                         {
-                            // Add another cluster to this cluster chain, and write the new End of Directory marker there
-                            uint newClusterId = _filesystem.AddClusterToChain(Cluster);
-                            if(newClusterId != 0)
-                            {
-                                using var newClusterStream = _filesystem.GetCluster(newClusterId);
-                                newClusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
-                            }
+                            using var newClusterStream = _filesystem.GetCluster(newClusterId);
+                            newClusterStream.WriteByte((byte)DirectoryEntryStatus.EndOfDirMarker);
                         }
                     }
-                    await clusterStream.FlushAsync();
-                    var newDirectory = new Directory(this, _filesystem, directoryEntry, clusterStream.Position - Marshal.SizeOf<DirectoryEntry>());
-                    Subdirectories.Add(newDirectory);
-                    return newDirectory;
                 }
+                await clusterStream.FlushAsync();
+
+                var newDirectory = new Directory(this, _filesystem, directoryEntry, clusterStream.Position - Marshal.SizeOf<DirectoryEntry>());
+                Subdirectories.Add(newDirectory);
+                return newDirectory;
             }
+
             Logger.Error($"No available directoryEntry could be found. Deleting the subdirectory");
             _filesystem.FreeClusters(ref directoryEntry);
             // Directory Entry is full. Add a cluster to this directory entry and add the new DirectoryEntry to that
@@ -422,6 +421,26 @@ namespace FatX.Net
         }
         
         #endregion Create Subdirectory
+
+        private static (int offset, DirectoryEntry? entry) FindAvailableDirectoryEntryOffset(ClusterStream directoryClusterStream)
+        {
+            for(int offset = 0; offset < directoryClusterStream.Length; offset += Marshal.SizeOf<DirectoryEntry>())
+            {
+                directoryClusterStream.Seek(offset, SeekOrigin.Begin);
+                var entry = directoryClusterStream.Read<DirectoryEntry>();
+                if (entry.Status == DirectoryEntryStatus.Available || 
+                    entry.Status == DirectoryEntryStatus.Deleted ||
+                    entry.Status == DirectoryEntryStatus.EndOfDirMarker)
+                {
+                    Logger.Verbose($"Found an available DirectoryEntry at offset {offset}");
+                    return (offset, entry);
+                }
+            }
+
+            // No available DirectoryEntry was found, so return the offset at the end of the cluster stream 
+            // (where a new DirectoryEntry would be written if a new cluster is added to this directory) 
+            return ((int)directoryClusterStream.Length, null); 
+        }
         
         private void RewriteDirectoryEntry()
         {

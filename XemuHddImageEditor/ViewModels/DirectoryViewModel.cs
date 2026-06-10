@@ -148,7 +148,7 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
         OnPropertyChanged(nameof(Contents));
     }
 
-    public void GetExtractTasks(string destination, Directory directory, Dictionary<string, Action> tasks)
+    public static void GetExtractTasks(string destination, Directory directory, Dictionary<string, Action> tasks)
     {
         tasks.Add("Extracting " + directory.FullName, async () => { await directory.Extract(destination); });
         var nextDestination = Path.Combine(destination, directory.Name);
@@ -196,23 +196,44 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
 
     private static async Task ImportFiles(Directory directory, IEnumerable<string> paths)
     {
-        foreach (var item in paths)
+        Queue<(Directory, string)> importQueue = new (paths.Select(p => (directory, p)));
+        while(importQueue.Count > 0)
         {
-            FileAttributes attr = File.GetAttributes(item);
+            (Directory d, string path) = importQueue.Dequeue();
+            FileAttributes attr = File.GetAttributes(path);
             if(attr.HasFlag(FileAttributes.Directory))
             {
-                var di = new DirectoryInfo(item);
-                var subdir = await directory.CreateSubdirectory(di.Name);
+                var di = new DirectoryInfo(path);
+                // Create a new subdirectory in the current directory if one doesn't already exist 
+                // with the same name (case-insensitive)
+                var subdir = directory.Subdirectories.FirstOrDefault(sd => sd.Name.Equals(di.Name, StringComparison.OrdinalIgnoreCase)) ??
+                    await directory.CreateSubdirectory(di.Name);
                 if(subdir != null)
                 {
-                    var subdirPaths = System.IO.Directory.GetFiles(di.FullName);
-                    await ImportFiles(subdir, subdirPaths);
+                    List<string> subPaths = [
+                        ..System.IO.Directory.GetFiles(di.FullName), 
+                        ..System.IO.Directory.GetDirectories(di.FullName)
+                    ];
+                    foreach(var additionalPath in subPaths)
+                        importQueue.Enqueue((subdir, additionalPath));
                 }
             }
             else
             {
-                using var fileStream = File.OpenRead(item);
-                await directory.CreateFile(new FileInfo(item), fileStream);
+                using var fileStream = File.OpenRead(path);
+                var fileInfo = new FileInfo(path);
+                var existingFile = directory.Files
+                .FirstOrDefault(f => f.Name.Equals(fileInfo.Name, StringComparison.OrdinalIgnoreCase));
+                if(existingFile != null)
+                {
+                    // TODO: If a file already exists with this name, prompt the user to confirm that they
+                    // wish to overwrite the existing file, skip the file, or provide an option to import the
+                    // file with a different name. For now, we'll just overwrite the existing file.
+                    await existingFile.Delete();
+                    
+                }
+                
+                await directory.CreateFile(fileInfo, fileStream);
             }
         }
     }

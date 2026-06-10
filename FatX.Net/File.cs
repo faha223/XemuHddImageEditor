@@ -166,7 +166,7 @@ namespace FatX.Net
         {
             _filesystem.FreeClusters(ref _directoryEntry);
             _directoryEntry.Status = DirectoryEntryStatus.Deleted;
-            _directoryEntry.FileSize = 0;
+            _directoryEntry.FirstCluster = 0;
             RewriteDirectoryEntry();
             Parent.Files.Remove(this);
 
