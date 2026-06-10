@@ -6,22 +6,30 @@
         <FluentTheme />
     </Application.Styles>
     <Application.Resources>
-        <SolidColorBrush x:Key="OpenFolderFillBack" Color="#2d6a29" />
+        <LinearGradientBrush x:Key="OpenFolderFillBack" StartPoint="0,0" EndPoint="0,14">
+            <GradientStop Offset="0" Color="#2d6a29" />
+            <GradientStop Offset="0.75" Color="#1c4219" />
+            <GradientStop Offset="1" Color="#1c4219" />
+        </LinearGradientBrush>
         <SolidColorBrush x:Key="OpenFolderFillFront" Color="#343434" />
-        <SolidColorBrush x:Key="ClosedFolderFillBack" Color="#2d6a29" />
+        <LinearGradientBrush x:Key="ClosedFolderFillBack" StartPoint="0,0" EndPoint="0,14">
+            <GradientStop Offset="0" Color="#2d6a29" />
+            <GradientStop Offset="0.23" Color="#1c4219" />
+            <GradientStop Offset="1" Color="#1c4219" />
+        </LinearGradientBrush>
         <LinearGradientBrush x:Key="ClosedFolderFillFront" StartPoint="0,0" EndPoint="0,14">
             <GradientStop Offset="0" Color="#343434" />
             <GradientStop Offset="0.85" Color="#343434" />
             <GradientStop Offset="1" Color="#262626" />
         </LinearGradientBrush>
         <Pen x:Key="ThickGreenLine" Brush="#FF007F00" Thickness="1.5" />
-        <Pen x:Key="ThinGreenLine" Brush="#FF007F00" Thickness="0.5" />
+        <Pen x:Key="ThinGreenLine" Brush="#FF007F00" Thickness="0.25" />
         <Pen x:Key="ThickBlackLine" Brush="#FF0c0c0c" Thickness="1.5" />
-        <Pen x:Key="ThinBlackLine" Brush="#FF0c0c0c" Thickness="0.5" />
+        <Pen x:Key="ThinBlackLine" Brush="#FF0c0c0c" Thickness="0.25" />
         <SolidColorBrush x:Key="FileIconFill" Color="#FFDDDDDD" />
         <DrawingGroup x:Key="OpenFolderIcon">
             <!-- Back -->
-			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 0,0 0.98,0.141 L 3,4 L 16,4 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
+			<GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
                              Brush="{StaticResource OpenFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
             <!-- Front -->
             <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.48,-0.359 L 3,4 L19,4 L 15.8,13.64 a 0.5,0.5 0 0,1 -0.354,0.354 Z"
@@ -29,7 +37,7 @@
 		</DrawingGroup>
         <DrawingGroup x:Key="OpenFolderIconLarge">
             <!-- Back -->
-			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 0,0 0.98,0.141 L 3,4 L 16,4 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
+			<GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
                              Brush="{StaticResource OpenFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
             <!-- Front -->
             <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.48,-0.359 L 3,4 L19,4 L 15.8,13.64 a 0.5,0.5 0 0,1 -0.354,0.354 Z"
@@ -37,18 +45,18 @@
 		</DrawingGroup>
         <DrawingGroup x:Key="ClosedFolderIcon">
             <!-- Back -->
-			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 1,0 1,0 L 1,3 L 16,3 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
+            <GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
                              Brush="{StaticResource ClosedFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
             <!-- Front -->
-            <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.5,-0.5 L 1,3 L 17,3 L 17,13.5 a 0.5 0.5 0 0,1 -0.5,0.5 Z"
+            <GeometryDrawing Geometry="M 0,13.5 L 0,3.5 L 0.5,3 L 15.5,3 L 16,3.5 L 16,13.5 Z"
                              Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
 		<DrawingGroup x:Key="ClosedFolderIconLarge">
             <!-- Back -->
-            <GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 1,0 1,0 L 1,3 L 16,3 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
+            <GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
                              Brush="{StaticResource ClosedFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
             <!-- Front -->
-            <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.5,-0.5 L 1,3 L 17,3 L 17,13.5 a 0.5 0.5 0 0,1 -0.5,0.5 Z"
+            <GeometryDrawing Geometry="M 0,13.5 L 0,3.5 L 0.5,3 L 15.5,3 L 16,3.5 L 16,13.5 Z"
                              Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
         <DrawingGroup x:Key="FileIcon">
@@ -98,10 +106,10 @@
                     </Border>
                 </ControlTemplate>
             </Setter>
-            <Style Selector="^:selected /template/ Border#PART_Border">
+            <!-- <Style Selector="^:selected /template/ Border#PART_Border">
                 <Setter Property="Background" Value="#2C7F7F7F" />
                 <Setter Property="BorderBrush" Value="Green" />
-            </Style>
+            </Style> -->
         </ControlTheme>
         <ControlTheme x:Key="InvisibleListBox" TargetType="ListBox">
             <Setter Property="Template">
@@ -166,31 +174,36 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Template">
                 <ControlTemplate>
-                    <DockPanel MinWidth="{TemplateBinding MinWidth}"
-                            MaxWidth="{TemplateBinding MaxWidth}">
-                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Margin="2,2,2,2">
-                            <Border Width="20" Height="20" Background="Transparent">
-					            <Image x:Name="PART_Icon" HorizontalAlignment="Left" VerticalAlignment="Center" Stretch="None" />
-                            </Border>
-                            <ToggleButton x:Name="ExpanderHeader"
-                                        Margin="5,0,0,0"
-                                        Theme="{StaticResource InvisibleToggleButton}"
-                                        MinHeight="{TemplateBinding MinHeight}"
-                                        CornerRadius="{TemplateBinding CornerRadius}"
-                                        IsEnabled="{TemplateBinding IsEnabled}"
-                                        Content="{TemplateBinding Header}"
-                                        ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                        IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}" />
-                        </StackPanel>
+                    <StackPanel Orientation="Vertical" Margin="2,2,2,2">
+                        <ToggleButton x:Name="ExpanderHeader"
+                                    HorizontalAlignment="Stretch"
+                                    Margin="5,0,0,0"
+                                    Theme="{StaticResource InvisibleToggleButton}"
+                                    MinHeight="{TemplateBinding MinHeight}"
+                                    CornerRadius="{TemplateBinding CornerRadius}"
+                                    IsEnabled="{TemplateBinding IsEnabled}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}">
+                            <DockPanel HorizontalAlignment="Stretch">
+                                <Border Width="20" Height="20" Background="Transparent" DockPanel.Dock="Left">
+                                    <Image x:Name="PART_Icon" HorizontalAlignment="Left" VerticalAlignment="Center" Stretch="None" />
+                                </Border>
+                                <ContentPresenter Content="{TemplateBinding Header}"
+                                                  ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                                  Foreground="{TemplateBinding Foreground}"
+                                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="Center" />
+                            </DockPanel>
+                        </ToggleButton>
                         <Border x:Name="ExpanderContent"
-                                IsVisible="{TemplateBinding IsExpanded, Mode=TwoWay}"
-                                Background="Transparent"
-                                BorderBrush="Transparent"
-                                BorderThickness="0"
-                                MinHeight="0"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Stretch"
-                                Padding="10,0,0,0">
+                            IsVisible="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            BorderThickness="0"
+                            MinHeight="0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Padding="10,0,0,0">
                             <ContentPresenter x:Name="PART_ContentPresenter"
                                             Content="{TemplateBinding Content}"
                                             ContentTemplate="{TemplateBinding ContentTemplate}"
@@ -198,7 +211,7 @@
                                             HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                             VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Border>
-                    </DockPanel>
+                    </StackPanel>
                 </ControlTemplate>
             </Setter>
             <Style Selector="^:expanded /template/ Image#PART_Icon">

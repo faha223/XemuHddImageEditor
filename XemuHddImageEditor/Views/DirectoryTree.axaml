@@ -31,7 +31,13 @@
 			          Expanded="Expander_OnExpanded"
 			          Collapsed="Expander_OnCollapsed">
 				<StackPanel>
-					<ListBox Theme="{StaticResource InvisibleListBox}" ItemsSource="{Binding Subdirectories}" />
+					<ListBox Theme="{StaticResource InvisibleListBox}" ItemsSource="{Binding Subdirectories}">
+						<ListBox.ItemsPanel>
+							<ItemsPanelTemplate>
+								<StackPanel Orientation="Vertical" />
+							</ItemsPanelTemplate>
+						</ListBox.ItemsPanel>
+					</ListBox>
 				</StackPanel>
 			</Expander>
 		</DataTemplate>
@@ -41,5 +47,11 @@
 		<vm:DirectoryTreeViewModel/>
 	</Design.DataContext>
 	
-	<ListBox Theme="{StaticResource InvisibleListBox}" ItemsSource="{Binding Subdirectories}" Margin="0,0,0,0" />
+	<ListBox Theme="{StaticResource InvisibleListBox}" ItemsSource="{Binding Subdirectories}" Margin="0,0,0,0">
+		<ListBox.ItemsPanel>
+			<ItemsPanelTemplate>
+				<StackPanel Orientation="Vertical" />
+			</ItemsPanelTemplate>
+		</ListBox.ItemsPanel>
+	</ListBox>
 </UserControl>

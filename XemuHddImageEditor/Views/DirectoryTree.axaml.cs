@@ -18,6 +18,13 @@ namespace XemuHddImageEditor.Views
                 vm.Open();
         }
 
-        private void Expander_OnCollapsed(object? sender, RoutedEventArgs e) => Expander_OnExpanded(sender, e);
+        private void Expander_OnCollapsed(object? sender, RoutedEventArgs e)
+        {
+            if (e.Source is Control ctrl &&
+                ctrl.DataContext is DirectoryViewModel vm)
+                vm.Close();
+        }
+
+        
     }
 }

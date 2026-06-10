@@ -78,6 +78,12 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
         Expanded = true;
         return Task.CompletedTask;
     }
+
+    public Task Close()
+    {
+        Expanded = false;
+        return Task.CompletedTask;
+    }
     
     public async Task Rename()
     {
