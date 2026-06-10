@@ -10,13 +10,13 @@ namespace FatX.Net.UnitTests;
 
 public class FatXTests
 {
-    //[Fact]
+    [Fact]
     /// <summary> This function generates an empty Xemu HDD image, initializes each partition, and verifies 
     /// that each partition contains no files or subdirectories. </summary>
     public void TestGenerateEmptyXemuHddImage()
     {
-
         string testImagePath = nameof(TestGenerateEmptyXemuHddImage) + ".img";
+	TestData.GenerateTestImage(testImagePath);
         using var fileStream = new FileStream(testImagePath, FileMode.Open, FileAccess.ReadWrite);
         Dictionary<char, Filesystem> partitions = new Dictionary<char, Filesystem>();
         List<(char, long, long)> partitionInfo = new List<(char, long, long)>
@@ -48,7 +48,7 @@ public class FatXTests
         System.IO.File.Delete(testImagePath);
     }
 
-    // [Fact]
+    [Fact]
     /// <summary> This function creates a subdirectory in the root directory of the C partition and verifies 
     /// that the subdirectory is created correctly. </summary>
     public void TestCreateSubdirectory()
