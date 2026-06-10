@@ -1,6 +1,4 @@
 using Avalonia.ReactiveUI;
-using ReactiveUI;
-using Avalonia.Controls;
 using XemuHddImageEditor.ViewModels;
 using Avalonia.Input;
 
@@ -8,12 +6,13 @@ namespace XemuHddImageEditor.Views;
 
 public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 {
+    private readonly MainWindowViewModel _viewModel = new ();
     public MainWindow()
     {
-        DataContext = new MainWindowViewModel();
+        DataContext = _viewModel;
 
         InitializeComponent();
-        
+
         AddHandler(DragDrop.DropEvent, OnDrop);
     }
 

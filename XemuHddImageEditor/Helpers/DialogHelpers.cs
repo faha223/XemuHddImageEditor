@@ -3,7 +3,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
-using ReactiveUI;
 
 namespace XemuHddImageEditor.Helpers;
 
@@ -60,7 +59,7 @@ public static class DialogHelpers
                 AllowMultiple = true
             };
             var result = await mainWindow.StorageProvider.OpenFilePickerAsync(options);
-            return result.Select(c => c.Path.LocalPath.ToString()).ToArray();
+            return [..result.Select(c => c.Path.LocalPath.ToString())];
         }
 
         return null;

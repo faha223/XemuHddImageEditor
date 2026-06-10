@@ -64,8 +64,15 @@ namespace FatX.Net
         
         public string Name
         {
-            get => Encoding.ASCII.GetString(_directoryEntry.Filename).Substring(0, (int)_directoryEntry.Status);
-            set {
+            get
+            {
+                if (_directoryEntry.Status == 0 ||
+                    (int)_directoryEntry.Status > Constants.FATX_MaxFilenameLen)
+                    return string.Empty;
+                return Encoding.ASCII.GetString(_directoryEntry.Filename).Substring(0, (int)_directoryEntry.Status);   
+            }
+            set
+            {
                 // Update the DirectoryEntry (filename AND status)
                 _directoryEntry.Filename = new byte[Constants.FATX_MaxFilenameLen];
                 Array.Copy(Encoding.ASCII.GetBytes(value), _directoryEntry.Filename, value.Length);
@@ -164,11 +171,12 @@ namespace FatX.Net
 
         public Task Delete()
         {
+            Logger.Verbose($"Deleting file {FullName}");
             _filesystem.FreeClusters(ref _directoryEntry);
             _directoryEntry.Status = DirectoryEntryStatus.Deleted;
             _directoryEntry.FirstCluster = 0;
             RewriteDirectoryEntry();
-            Parent.Files.Remove(this);
+            Parent.Refresh();
 
             return Task.CompletedTask;
         }

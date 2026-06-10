@@ -3,6 +3,7 @@ using FatX.Net.Helpers;
 using FatX.Net.Interfaces;
 using FatX.Net.Structures;
 using InteropHelpers;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -22,7 +23,12 @@ namespace FatX.Net
 
         public string Name 
         {
-            get => Encoding.ASCII.GetString(_directoryEntry.Filename).Substring(0, (int)_directoryEntry.Status);
+            get {
+                if (_directoryEntry.Status == 0 ||
+                    (int)_directoryEntry.Status > Constants.FATX_MaxFilenameLen)
+                    return string.Empty;
+                return Encoding.ASCII.GetString(_directoryEntry.Filename).Substring(0, (int)_directoryEntry.Status);
+            }
             set
             {
                 if(Parent != null)
@@ -125,6 +131,7 @@ namespace FatX.Net
 
         public void Refresh()
         {
+            Logger.Verbose("Refreshing directory " + FullName);
             lock(_initLock)
             {
                 InitAsync().Wait();
@@ -191,7 +198,7 @@ namespace FatX.Net
             if (Parent == null)
                 return;
 
-            Console.WriteLine($"Deleting directory {FullName}");
+            Logger.Verbose($"Deleting directory {FullName}");
 
             await InitAsync();
             // Make a copy to avoid modifying the collection while iterating
@@ -207,12 +214,13 @@ namespace FatX.Net
             Files.Clear();
 
             _directoryEntry.Status = DirectoryEntryStatus.Deleted;
+            Logger.Verbose($"Writing Directory Entry {FullName} as deleted");
             RewriteDirectoryEntry();
 
             // You can't delete a root directory
-            Parent.Subdirectories.Remove(this);
+            Parent.Refresh();
 
-            Console.WriteLine($"Finished deleting directory {FullName}");
+            Logger.Verbose($"Finished deleting directory {FullName}");
         }
 
         #endregion Delete

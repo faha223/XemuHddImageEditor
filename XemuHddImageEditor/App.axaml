@@ -1,4 +1,5 @@
-<Application xmlns="https://github.com/avaloniaui"
+<Application Name="XemuHddImageEditor"
+             xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              RequestedThemeVariant="Dark"
              x:Class="XemuHddImageEditor.App">
@@ -6,12 +7,13 @@
         <FluentTheme />
     </Application.Styles>
     <Application.Resources>
+        <!-- Brushes -->
         <LinearGradientBrush x:Key="OpenFolderFillBack" StartPoint="0,0" EndPoint="0,14">
             <GradientStop Offset="0" Color="#2d6a29" />
             <GradientStop Offset="0.75" Color="#1c4219" />
             <GradientStop Offset="1" Color="#1c4219" />
         </LinearGradientBrush>
-        <SolidColorBrush x:Key="OpenFolderFillFront" Color="#343434" />
+        <SolidColorBrush x:Key="OpenFolderFillFront" Color="#262626" />
         <LinearGradientBrush x:Key="ClosedFolderFillBack" StartPoint="0,0" EndPoint="0,14">
             <GradientStop Offset="0" Color="#2d6a29" />
             <GradientStop Offset="0.23" Color="#1c4219" />
@@ -19,14 +21,18 @@
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="ClosedFolderFillFront" StartPoint="0,0" EndPoint="0,14">
             <GradientStop Offset="0" Color="#343434" />
-            <GradientStop Offset="0.85" Color="#343434" />
+            <GradientStop Offset="0.75" Color="#2C2C2C" />
             <GradientStop Offset="1" Color="#262626" />
         </LinearGradientBrush>
+        <SolidColorBrush x:Key="FileIconFill" Color="#FFDDDDDD" />
+        
+        <!-- Pens -->
         <Pen x:Key="ThickGreenLine" Brush="#FF007F00" Thickness="1.5" />
         <Pen x:Key="ThinGreenLine" Brush="#FF007F00" Thickness="0.25" />
         <Pen x:Key="ThickBlackLine" Brush="#FF0c0c0c" Thickness="1.5" />
         <Pen x:Key="ThinBlackLine" Brush="#FF0c0c0c" Thickness="0.25" />
-        <SolidColorBrush x:Key="FileIconFill" Color="#FFDDDDDD" />
+        
+        <!-- Open Folder Icon -->
         <DrawingGroup x:Key="OpenFolderIcon">
             <!-- Back -->
 			<GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
@@ -35,6 +41,8 @@
             <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.48,-0.359 L 3,4 L19,4 L 15.8,13.64 a 0.5,0.5 0 0,1 -0.354,0.354 Z"
                              Brush="{StaticResource OpenFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
+
+        <!-- Open Folder Icon - Large -->
         <DrawingGroup x:Key="OpenFolderIconLarge">
             <!-- Back -->
 			<GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
@@ -43,6 +51,8 @@
             <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.48,-0.359 L 3,4 L19,4 L 15.8,13.64 a 0.5,0.5 0 0,1 -0.354,0.354 Z"
                              Brush="{StaticResource OpenFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
+
+        <!-- Closed Folder Icon -->
         <DrawingGroup x:Key="ClosedFolderIcon">
             <!-- Back -->
             <GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
@@ -50,7 +60,9 @@
             <!-- Front -->
             <GeometryDrawing Geometry="M 0,13.5 L 0,3.5 L 0.5,3 L 15.5,3 L 16,3.5 L 16,13.5 Z"
                              Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
-		</DrawingGroup>
+		</DrawingGroup> 
+
+        <!-- Closed Folder Icon - Large -->
 		<DrawingGroup x:Key="ClosedFolderIconLarge">
             <!-- Back -->
             <GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
@@ -59,6 +71,22 @@
             <GeometryDrawing Geometry="M 0,13.5 L 0,3.5 L 0.5,3 L 15.5,3 L 16,3.5 L 16,13.5 Z"
                              Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
+
+        <!-- Closed Folder Icon - Large -->
+		<DrawingGroup x:Key="ArrowFolderIconLarge">
+            <!-- Back -->
+            <GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
+                             Brush="{StaticResource ClosedFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
+            <!-- Front -->
+            <GeometryDrawing Geometry="M 0,13.5 L 0,3.5 L 0.5,3 L 15.5,3 L 16,3.5 L 16,13.5 Z"
+                             Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
+
+            <!-- Arrow --> 
+            <GeometryDrawing Geometry="M 8,4 L 10,6 L 9,6 L 9,10 L 7,10 L 7,6 L 6,6 Z"
+                                Brush="{StaticResource OpenFolderFillBack}" Pen="{StaticResource ThinBlackLine}"/>                
+		</DrawingGroup>
+
+        <!-- File Icon -->
         <DrawingGroup x:Key="FileIcon">
             <!-- Page -->
             <GeometryDrawing Geometry="M 8,0 L 12,4 L 12,18 L 0,18 L 0,0 Z"
@@ -73,6 +101,8 @@
             <!--                  Pen="{StaticResource ThickBlackLine}"> -->
             <!-- </GeometryDrawing>  -->
         </DrawingGroup>
+
+        <!-- File Icon - Large -->
 		<DrawingGroup x:Key="FileIconLarge">
             <!-- Page -->
             <GeometryDrawing Geometry="M 8,0 L 12,4 L 12,18 L 0,18 L 0,0 Z"
@@ -87,6 +117,12 @@
             <!--                  Pen="{StaticResource ThinBlackLine}"> -->
             <!-- </GeometryDrawing> -->
 		</DrawingGroup>
+
+        <DrawingGroup x:Key="ChildDirectoryIndicator">
+            <GeometryDrawing Geometry="M 0,0 L 10,0 M 5,-5 L 5,5" Pen="{StaticResource ThickGreenLine}" />
+        </DrawingGroup>
+
+        <!-- Control Themes -->
         <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Padding" Value="{DynamicResource ListBoxItemPadding}" />
@@ -106,10 +142,11 @@
                     </Border>
                 </ControlTemplate>
             </Setter>
-            <!-- <Style Selector="^:selected /template/ Border#PART_Border">
-                <Setter Property="Background" Value="#2C7F7F7F" />
-                <Setter Property="BorderBrush" Value="Green" />
-            </Style> -->
+            <Style Selector="^:selected /template/ Border#PART_Border">
+                <!-- Selected behavior doesn't work the way it should, so for now we'll leave this commented out-->
+                <!-- <Setter Property="Background" Value="#2C7F7F7F" /> -->
+                <!-- <Setter Property="BorderBrush" Value="Green" /> -->
+            </Style>
         </ControlTheme>
         <ControlTheme x:Key="InvisibleListBox" TargetType="ListBox">
             <Setter Property="Template">
@@ -174,7 +211,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Template">
                 <ControlTemplate>
-                    <StackPanel Orientation="Vertical" Margin="2,2,2,2">
+                    <StackPanel Orientation="Vertical">
                         <ToggleButton x:Name="ExpanderHeader"
                                     HorizontalAlignment="Stretch"
                                     Margin="5,0,0,0"
@@ -185,7 +222,7 @@
                                     ContentTemplate="{TemplateBinding HeaderTemplate}"
                                     IsChecked="{TemplateBinding IsExpanded, Mode=TwoWay}">
                             <DockPanel HorizontalAlignment="Stretch">
-                                <Border Width="20" Height="20" Background="Transparent" DockPanel.Dock="Left">
+                                <Border Width="20" Height="20" Background="Transparent" DockPanel.Dock="Left" Margin="4,2,4,2">
                                     <Image x:Name="PART_Icon" HorizontalAlignment="Left" VerticalAlignment="Center" Stretch="None" />
                                 </Border>
                                 <ContentPresenter Content="{TemplateBinding Header}"
@@ -225,5 +262,5 @@
                 </Setter>
             </Style>
         </ControlTheme>
-    </Application.Resources>
+    </Application.Resources>     
 </Application>

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,20 +12,19 @@ public class FatXTests
     [Fact]
     /// <summary> This function generates an empty Xemu HDD image, initializes each partition, and verifies 
     /// that each partition contains no files or subdirectories. </summary>
-    public void TestGenerateEmptyXemuHddImage()
+    public async Task TestGenerateEmptyXemuHddImage()
     {
         string testImagePath = nameof(TestGenerateEmptyXemuHddImage) + ".img";
-	TestData.GenerateTestImage(testImagePath);
+	    TestData.GenerateTestImage(testImagePath);
         using var fileStream = new FileStream(testImagePath, FileMode.Open, FileAccess.ReadWrite);
-        Dictionary<char, Filesystem> partitions = new Dictionary<char, Filesystem>();
-        List<(char, long, long)> partitionInfo = new List<(char, long, long)>
-        {
+        Dictionary<char, Filesystem> partitions = [];
+        List<(char, long, long)> partitionInfo = [
             ('C', Constants.CPartitionOffset, Constants.CPartitionSize),
             ('E', Constants.EPartitionOffset, Constants.EPartitionSize),
             ('X', Constants.XPartitionOffset, Constants.XPartitionSize),
             ('Y', Constants.YPartitionOffset, Constants.YPartitionSize),
             ('Z', Constants.ZPartitionOffset, Constants.ZPartitionSize)
-        };
+        ];
         foreach(var tuple in partitionInfo)
         {
             var partition = new Filesystem(fileStream, tuple.Item1, tuple.Item2, tuple.Item3);
@@ -38,11 +36,11 @@ public class FatXTests
         {
             Assert.True(entry.Value.Initialized);
             Assert.Equal(entry.Key, entry.Value.DriveLetter);
-            var rootDirectory = entry.Value.GetRootDirectory().Result;
+            var rootDirectory = await entry.Value.GetRootDirectory();
             Assert.NotNull(rootDirectory);
             Assert.Equal(entry.Key.ToString(), rootDirectory.Name);
-            Assert.Equal(0, rootDirectory.Files.Count);
-            Assert.Equal(0, rootDirectory.Subdirectories.Count);
+            Assert.Empty(rootDirectory.Files);
+            Assert.Empty(rootDirectory.Subdirectories);
         }
 
         System.IO.File.Delete(testImagePath);
@@ -51,7 +49,7 @@ public class FatXTests
     [Fact]
     /// <summary> This function creates a subdirectory in the root directory of the C partition and verifies 
     /// that the subdirectory is created correctly. </summary>
-    public void TestCreateSubdirectory()
+    public async Task TestCreateSubdirectory()
     {
         // Generate a test image
         string testImagePath = nameof(TestCreateSubdirectory) + ".img";
@@ -67,10 +65,10 @@ public class FatXTests
             
             partitionForWrite.Init();
 
-            var rootDirectory = partitionForWrite.GetRootDirectory().Result;
+            var rootDirectory = await partitionForWrite.GetRootDirectory();
             Assert.NotNull(rootDirectory);
 
-            var subdirectory = rootDirectory.CreateSubdirectory(testSubdirName).Result;
+            var subdirectory = await rootDirectory.CreateSubdirectory(testSubdirName);
             fileStream.Flush();
         }
 
@@ -81,7 +79,7 @@ public class FatXTests
             partitionForRead.Init();
 
             // Get the Root directory
-            var rootDirectory = partitionForRead.GetRootDirectory().Result;
+            var rootDirectory = await partitionForRead.GetRootDirectory();
             Assert.NotNull(rootDirectory);
 
             // Verify that the Root directory has exactly one subdirectory with the correct name
@@ -94,12 +92,12 @@ public class FatXTests
             Assert.Empty(testSubdir.Subdirectories);
 
             // Create a subdirectory in the first subdirectory
-            testSubdir.CreateSubdirectory(testSubdirName2).Wait();
-            rootDirectory.PrintTree();
+            await testSubdir.CreateSubdirectory(testSubdirName2);
+            await rootDirectory.PrintTree();
 
             // Create another subdirectory in the root directory
-            rootDirectory.CreateSubdirectory(testSubdirName3).Wait();
-            rootDirectory.PrintTree();
+            await rootDirectory.CreateSubdirectory(testSubdirName3);
+            await rootDirectory.PrintTree();
             fileStream.Flush();
         }
 
@@ -109,10 +107,10 @@ public class FatXTests
             var partitionForRead = new Filesystem(fileStream, 'C', Constants.CPartitionOffset, Constants.CPartitionSize);        
             partitionForRead.Init();
 
-            var rootDirectory = partitionForRead.GetRootDirectory().Result;
+            var rootDirectory = await partitionForRead.GetRootDirectory();
             Assert.NotNull(rootDirectory);
 
-            rootDirectory.PrintTree();
+            await rootDirectory.PrintTree();
 
             Assert.Equal(2, rootDirectory.Subdirectories.Count);
 
@@ -141,7 +139,7 @@ public class FatXTests
     }
 
     [Fact]
-    public void TestCreateFile()
+    public async Task TestCreateFile()
     {
         // Generate a test image
         string testFileName = "/Users/fred/Xemu/BIOS/Complex 4627 Retail 1.03.bin";
@@ -156,11 +154,11 @@ public class FatXTests
             
             partitionForWrite.Init();
 
-            var rootDirectory = partitionForWrite.GetRootDirectory().Result;
+            var rootDirectory = await partitionForWrite.GetRootDirectory();
             Assert.NotNull(rootDirectory);
 
             var contentStream = new FileStream(fileInfo.FullName, FileMode.Open, FileAccess.Read);
-            rootDirectory.CreateFile(fileInfo, contentStream).Wait();
+            await rootDirectory.CreateFile(fileInfo, contentStream);
             fileStream.Flush();
         }
 
@@ -170,13 +168,13 @@ public class FatXTests
             var partitionForRead = new Filesystem(fileStream, 'C', Constants.CPartitionOffset, Constants.CPartitionSize);        
             partitionForRead.Init();
 
-            var rootDirectory = partitionForRead.GetRootDirectory().Result;
+            var rootDirectory = await partitionForRead.GetRootDirectory();
             Assert.NotNull(rootDirectory);
-            rootDirectory.PrintTree();
+            await rootDirectory.PrintTree();
             Assert.Single(rootDirectory.Files);
             var file = rootDirectory.Files[0];
             Assert.Equal(fileInfo.Name, file.Name);
-            file.Extract("temp.bin").Wait();
+            await file.Extract("temp.bin");
             Assert.True(System.IO.File.ReadAllBytes("temp.bin").SequenceEqual(System.IO.File.ReadAllBytes(testFileName)));
         }
     }

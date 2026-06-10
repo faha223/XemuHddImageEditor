@@ -5,6 +5,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ApplicationId>com.fred.xemuhddimageeditor</ApplicationId>
   </PropertyGroup>
 
   <ItemGroup>

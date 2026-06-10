@@ -3,6 +3,8 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Directory = FatX.Net.Directory;
 using XemuHddImageEditor.Helpers;
 using XemuHddImageEditor.Views;
+using Avalonia.Threading;
+using FatX.Net.Helpers;
 
 namespace XemuHddImageEditor.ViewModels;
 
@@ -132,8 +134,7 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
         await subdirectory.InternalDelete();
         Subdirectories.Remove(subdirectory);
 
-        OnPropertyChanged(nameof(Subdirectories));
-        OnPropertyChanged(nameof(Contents));
+        Refresh();
     }
 
     public async Task DeleteFile(FileViewModel file)
@@ -144,8 +145,7 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
         await file.InternalDelete();
         Files.Remove(file);
 
-        OnPropertyChanged(nameof(Files));
-        OnPropertyChanged(nameof(Contents));
+        Refresh();
     }
 
     public static void GetExtractTasks(string destination, Directory directory, Dictionary<string, Action> tasks)
@@ -164,12 +164,15 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
 
     private void Refresh()
     {
+        Logger.Verbose($"Refreshing directory viewmodel {FullName}");
         _directory.Refresh();
         _files = null;
         _subdirectories = null;
-        OnPropertyChanged(nameof(Files));
-        OnPropertyChanged(nameof(Subdirectories));
-        OnPropertyChanged(nameof(Contents));
+        Dispatcher.UIThread.Invoke(() => {
+            OnPropertyChanged(nameof(Files));
+            OnPropertyChanged(nameof(Subdirectories));
+            OnPropertyChanged(nameof(Contents));
+        });
     }
 
     public async Task CreateDirectory()
@@ -196,6 +199,9 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
 
     private static async Task ImportFiles(Directory directory, IEnumerable<string> paths)
     {
+        // TODO: Convert this so that it generates a Task for each operation, and then display a 
+        // ProgressTrackerDialog to the user while the files are being imported, similar to how 
+        // the extraction process works.
         Queue<(Directory, string)> importQueue = new (paths.Select(p => (directory, p)));
         while(importQueue.Count > 0)
         {

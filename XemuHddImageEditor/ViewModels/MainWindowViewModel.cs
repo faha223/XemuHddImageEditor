@@ -6,7 +6,7 @@ namespace XemuHddImageEditor.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    public DirectoryTreeViewModel DirectoryTreeVM { get; } = new();
+    public DirectoryTreeViewModel DirectoryTreeVM { get; } = new DirectoryTreeViewModel();
 
     public bool CanGoUp => SelectedDirectory?.ParentDirectory != null;
 

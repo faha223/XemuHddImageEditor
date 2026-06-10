@@ -8,6 +8,7 @@ namespace XemuHddImageEditor.Views
     {
         public DirectoryTree()
         {
+            DataContext = new DirectoryTreeViewModel();
             InitializeComponent();
         }
 

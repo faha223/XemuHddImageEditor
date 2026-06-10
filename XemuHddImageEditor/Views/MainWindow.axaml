@@ -41,7 +41,8 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-	<Grid RowDefinitions="auto,120,*" ColumnDefinitions="240,*">
+	<Grid RowDefinitions="auto,120,*" ColumnDefinitions="240,auto,*">
+		<!-- Menu Bar at the top of the window -->
 		<Menu Grid.Row="0" Grid.ColumnSpan="32">
 			<MenuItem Header="_File">
 				<MenuItem Header="_Load Image" Command="{Binding LoadImage}" />
@@ -49,7 +50,9 @@
 				<MenuItem Header="_Exit" Command="{Binding Close}" />
 			</MenuItem>
 		</Menu>
-		<Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Background="#161616" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2">
+
+		<!-- Control Panel below the menu bar -->
+		<Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Background="#161616" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2">
 			<StackPanel Margin="5">
 				<DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Top">
 					<Button Margin="0,0,5,0" DockPanel.Dock="Left" IsEnabled="{Binding CanGoUp}" Command="{Binding GoToParentDirectory}">Go Up</Button>
@@ -57,10 +60,14 @@
 				</DockPanel>
 			</StackPanel>
 		</Border>
-		<Border Grid.Row="2" Grid.Column="0" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2" Background="#FF161616">
+
+		<!-- Directory Tree on the left side of the window -->
+		<Border Grid.Row="2" Grid.Column="0" BorderThickness="1" BorderBrush="Green" Margin="2,2,0,2" CornerRadius="2" Background="#FF161616">
 			<views:DirectoryTree DataContext="{Binding DirectoryTreeVM}" />
 		</Border>
-		<Border Grid.Row="2" Grid.Column="1" BorderThickness="1" BorderBrush="Green" Margin="2" CornerRadius="2" Background="#FF161616">
+		<GridSplitter Grid.Row="2" Grid.Column="1" Width="4" Background="Transparent" VerticalAlignment="Stretch" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" />
+		<!-- Current Directory view on the right side of the window -->
+		<Border Grid.Row="2" Grid.Column="2" BorderThickness="1" BorderBrush="Green" Margin="0,2,2,2" CornerRadius="2" Background="#FF161616">
 			<views:Directory DataContext="{Binding SelectedDirectory}" />
 		</Border>
 	</Grid>
