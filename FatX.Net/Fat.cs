@@ -16,7 +16,7 @@ namespace FatX.Net
             {
                 UnderlyingStream.Seek(Offset + (index * BytesPerFatEntry), SeekOrigin.Begin);
                 byte[] valueBuffer = [0, 0, 0, 0];
-                UnderlyingStream.Read(valueBuffer, 0, BytesPerFatEntry);
+                UnderlyingStream.ReadExactly(valueBuffer, 0, BytesPerFatEntry);
 
                 uint entry = 0;
                 if(_filesystem.FatType == 16)
@@ -84,7 +84,7 @@ namespace FatX.Net
                     UnderlyingStream.Seek(Offset, SeekOrigin.Begin);
                     for(uint index = 0; index < Size / BytesPerFatEntry; index++)
                     {
-                        UnderlyingStream.Read(valueBuffer);
+                        UnderlyingStream.ReadExactly(valueBuffer);
                         ushort entry = BitConverter.ToUInt16(valueBuffer);
                         if(entry == Constants.FATX_CLUSTER_AVAILABLE_16)
                         {
@@ -110,7 +110,7 @@ namespace FatX.Net
                     UnderlyingStream.Seek(Offset, SeekOrigin.Begin);
                     for(uint index = 0; index < Size / BytesPerFatEntry; index++)
                     {
-                        UnderlyingStream.Read(valueBuffer, 0, valueBuffer.Length);
+                        UnderlyingStream.ReadExactly(valueBuffer, 0, valueBuffer.Length);
                         uint entry = BitConverter.ToUInt32(valueBuffer);
                         if(entry == Constants.FATX_CLUSTER_AVAILABLE_32)
                         {

@@ -7,6 +7,7 @@
         SizeToContent="WidthAndHeight"
         mc:Ignorable="d"
         x:Class="XemuHddImageEditor.Views.ProgressTrackerDialog"
+		x:DataType="vm:ProgressTrackerViewModel"
         WindowStartupLocation="CenterScreen"
         Title="Working">
 	<Grid Background="#FF161616">

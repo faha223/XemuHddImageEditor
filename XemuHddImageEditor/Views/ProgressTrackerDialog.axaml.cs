@@ -8,7 +8,7 @@ namespace XemuHddImageEditor.Views
     {
         public ProgressTrackerViewModel ViewModel;
 
-        public ProgressTrackerDialog() : this(new Dictionary<string, Action>())
+        public ProgressTrackerDialog() : this([])
         {
         }
         

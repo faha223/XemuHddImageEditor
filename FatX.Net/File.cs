@@ -126,9 +126,10 @@ namespace FatX.Net
 
         public async Task Extract(string filename)
         {
+            // Workaround for MacOS file dialogs returning file URLs instead of paths
             if(filename.StartsWith("file:///"))
                 filename = new Uri(filename).LocalPath;
-                
+            
             Logger.Verbose($"Extracting file {FullName} to {filename}");
             using var outStream = new FileStream(filename, FileMode.Create);
 

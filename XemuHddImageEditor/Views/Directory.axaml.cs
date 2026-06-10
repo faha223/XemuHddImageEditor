@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Security.Cryptography;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Input;
 using XemuHddImageEditor.ViewModels;
 
@@ -27,10 +25,10 @@ namespace XemuHddImageEditor.Views
 
         private void OnDrop(object? sender, DragEventArgs e)
         {
-            Debug.WriteLine("[Debug] Views.Directory.OnDrop");
-            if (e.Data.GetDataFormats().Contains("File"))
+            System.Diagnostics.Debug.WriteLine("[Debug] Views.Directory.OnDrop");
+            if (e.DataTransfer.Formats.Contains(DataFormat.File))
             {
-                var files = e.Data.GetFiles();
+                var files = e.DataTransfer.TryGetFiles();
                 if (files != null)
                 {
                     foreach (var file in files)

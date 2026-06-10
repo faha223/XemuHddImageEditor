@@ -25,12 +25,12 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
     private List<DirectoryViewModel>? _subdirectories;
     public List<DirectoryViewModel> Subdirectories
     {
-        get
+        get 
         {
-            _subdirectories ??= _directory.Subdirectories
+            _subdirectories ??= [.._directory.Subdirectories
                 .Select(d => new DirectoryViewModel(d, this))
-                .ToList();
-
+                .OrderBy(d => d.Name, StringComparer.OrdinalIgnoreCase)
+            ];
             return _subdirectories;
         }
     }
@@ -38,25 +38,19 @@ public class DirectoryViewModel(Directory directory, DirectoryViewModel? parentD
     private List<FileViewModel>? _files;
     public List<FileViewModel> Files
     {
-        get
-        {
-            _files ??= _directory.Files
+        get {
+            _files ??= [.._directory.Files
                 .Select(f => new FileViewModel(f, this))
-                .ToList();
+                .OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase)
+            ];
             return _files;
         }
     }
 
-    public List<IFileSystemEntry> Contents
-    {
-        get
-        {
-            var list = new List<IFileSystemEntry>();
-            list.AddRange(Subdirectories);
-            list.AddRange(Files);
-            return list;
-        }
-    }
+    public List<IFileSystemEntry> Contents => [
+        ..Subdirectories,
+        ..Files
+    ];
 
     private bool _expanded = false;
     public bool Expanded

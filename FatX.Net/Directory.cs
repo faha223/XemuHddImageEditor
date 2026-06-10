@@ -3,8 +3,6 @@ using FatX.Net.Helpers;
 using FatX.Net.Interfaces;
 using FatX.Net.Structures;
 using InteropHelpers;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
@@ -241,7 +239,7 @@ namespace FatX.Net
                 {
                     var bytesToWrite = (int)Math.Min(_filesystem.BytesPerCluster, content.Length - content.Position);
                     Logger.Verbose($"Writing {bytesToWrite} bytes to cluster {clusterId}");
-                    content.Read(buffer, 0, bytesToWrite);
+                    content.ReadExactly(buffer, 0, bytesToWrite);
                     clusterStream.Write(buffer, 0, bytesToWrite);
                     clusterStream.Flush();
                 }

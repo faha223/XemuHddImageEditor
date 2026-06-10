@@ -6,13 +6,13 @@
         <FluentTheme />
     </Application.Styles>
     <Application.Resources>
-        <SolidColorBrush x:Key="OpenFolderFillBack" Color="#FFD1BA7B" />
-        <SolidColorBrush x:Key="OpenFolderFillFront" Color="#70633f" />
-        <SolidColorBrush x:Key="ClosedFolderFillBack" Color="#FFD1BA7B" />
+        <SolidColorBrush x:Key="OpenFolderFillBack" Color="#2d6a29" />
+        <SolidColorBrush x:Key="OpenFolderFillFront" Color="#343434" />
+        <SolidColorBrush x:Key="ClosedFolderFillBack" Color="#2d6a29" />
         <LinearGradientBrush x:Key="ClosedFolderFillFront" StartPoint="0,0" EndPoint="0,14">
-            <GradientStop Offset="0" Color="#FFD1BA7B" />
-            <GradientStop Offset="0.85" Color="#FFD1BA7B" />
-            <GradientStop Offset="1" Color="#70633f" />
+            <GradientStop Offset="0" Color="#343434" />
+            <GradientStop Offset="0.85" Color="#343434" />
+            <GradientStop Offset="1" Color="#262626" />
         </LinearGradientBrush>
         <Pen x:Key="ThickGreenLine" Brush="#FF007F00" Thickness="1.5" />
         <Pen x:Key="ThinGreenLine" Brush="#FF007F00" Thickness="0.5" />
@@ -22,10 +22,10 @@
         <DrawingGroup x:Key="OpenFolderIcon">
             <!-- Back -->
 			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 0,0 0.98,0.141 L 3,4 L 16,4 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
-                             Brush="{StaticResource OpenFolderFillBack}" Pen="{StaticResource ThickBlackLine}" />
+                             Brush="{StaticResource OpenFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
             <!-- Front -->
             <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.48,-0.359 L 3,4 L19,4 L 15.8,13.64 a 0.5,0.5 0 0,1 -0.354,0.354 Z"
-                             Brush="{StaticResource OpenFolderFillFront}" Pen="{StaticResource ThickBlackLine}" />
+                             Brush="{StaticResource OpenFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
         <DrawingGroup x:Key="OpenFolderIconLarge">
             <!-- Back -->
@@ -38,10 +38,10 @@
         <DrawingGroup x:Key="ClosedFolderIcon">
             <!-- Back -->
 			<GeometryDrawing Geometry="M 0,13.5 a 0.5,0.5 0 1,0 1,0 L 1,3 L 16,3 L 16,1.5 L 9,1.5 L 7,0 L 4,0 L 2,1.5 L 0,1.5 Z"
-                             Brush="{StaticResource ClosedFolderFillBack}" Pen="{StaticResource ThickBlackLine}" />
+                             Brush="{StaticResource ClosedFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
             <!-- Front -->
             <GeometryDrawing Geometry="M 0.5,14 a 0.5,0.5 0 0,0 0.5,-0.5 L 1,3 L 17,3 L 17,13.5 a 0.5 0.5 0 0,1 -0.5,0.5 Z"
-                             Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThickBlackLine}" />
+                             Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
 		<DrawingGroup x:Key="ClosedFolderIconLarge">
             <!-- Back -->
@@ -54,11 +54,11 @@
         <DrawingGroup x:Key="FileIcon">
             <!-- Page -->
             <GeometryDrawing Geometry="M 8,0 L 12,4 L 12,18 L 0,18 L 0,0 Z"
-                             Brush="{StaticResource FileIconFill}" Pen="{StaticResource ThickGreenLine}">
+                             Brush="{StaticResource FileIconFill}" Pen="{StaticResource ThinGreenLine}">
             </GeometryDrawing>
             <!-- Folded Corner -->
             <GeometryDrawing Geometry="M 8,0 L 8,4 L 12,4 Z" 
-                             Brush="#407f7f7f" Pen="{StaticResource ThickBlackLine}">
+                             Brush="#407f7f7f" Pen="{StaticResource ThinBlackLine}">
             </GeometryDrawing>
             <!-- Lines -->
             <!-- <GeometryDrawing Geometry="M 2,4 L 10,4 M 2,6 L 10,6 M 2,8 L 10,8 M 2,10 L 10,10 M 2,12 L 10,12 M 2,14 L 10,14 M 2,16 L 10,16"  -->

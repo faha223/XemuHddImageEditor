@@ -22,7 +22,7 @@ namespace FatX.Net
 
         public ushort FatType { get; private set; } = 16;
 
-        private Fat _fat { get; set; }
+        private Fat? _fat { get; set; }
 
         public long ClusterOffset => FatOffset + FatSize;
         public long NumberOfClusters => ((Size - FatSize - Constants.FATX_FAT_Offset) / BytesPerCluster) + Constants.FATX_FAT_ReservedEntriesCount;
@@ -96,13 +96,17 @@ namespace FatX.Net
             new (this, _stream, cluster);
 
         internal uint GetNextCluster(uint cluster) =>
-            _fat.GetNextCluster(cluster);
+            _fat?.GetNextCluster(cluster) ?? throw new InvalidOperationException("File Allocation Table not initialized");
 
-        internal void FreeClusters(ref DirectoryEntry entry) =>
+        internal void FreeClusters(ref DirectoryEntry entry)
+        {
+            if(_fat == null)
+                throw new InvalidOperationException("File Allocation Table not initialized");
             _fat.FreeClusters(ref entry);
+        }
 
         internal uint AddClusterToChain(uint cluster) =>
-            _fat.AddClusterToChain(cluster);
+            _fat?.AddClusterToChain(cluster) ?? throw new InvalidOperationException("File Allocation Table not initialized");
 
         private Directory? _rootDirectory = null;
         public Task<Directory> GetRootDirectory()
@@ -145,11 +149,15 @@ namespace FatX.Net
 
         public Task<uint> FindAvailableCluster()
         {
-            return Task.FromResult(_fat.FindAvailableCluster());
+            return Task.FromResult(_fat?.FindAvailableCluster() ?? 
+                throw new InvalidOperationException("File Allocation Table not initialized"));
         }
 
         public Task ReserveCluster(uint cluster)
         {
+            if(_fat == null)
+                throw new InvalidOperationException("File Allocation Table not initialized");
+
             // Reserve the cluster by marking it with FATX_CLUSTER_END
             _fat.WriteEntry(cluster, Constants.FATX_CLUSTER_END_32);
             return Task.CompletedTask;
@@ -164,7 +172,8 @@ namespace FatX.Net
         /// </returns>
         public Task<uint> AllocateSpace(long length)
         {
-            return Task.FromResult(_fat.ReserveSpace(length));
+            return Task.FromResult(_fat?.ReserveSpace(length) ?? 
+                throw new InvalidOperationException("File Allocation Table not initialized"));
         }
     }
 }

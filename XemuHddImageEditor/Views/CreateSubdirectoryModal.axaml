@@ -7,6 +7,7 @@
         SizeToContent="WidthAndHeight"
         mc:Ignorable="d"
         x:Class="XemuHddImageEditor.Views.CreateSubdirectoryModal"
+        x:DataType="vm:CreateSubdirectoryModalViewModel"
         WindowStartupLocation="CenterScreen"
         Title="Rename">
     <Grid RowDefinitions="auto,*" Background="#FF161616">

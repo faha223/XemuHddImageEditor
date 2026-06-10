@@ -6,6 +6,7 @@
 		xmlns:views="using:XemuHddImageEditor.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="XemuHddImageEditor.Views.MainWindow"
+		x:DataType="vm:MainWindowViewModel"
         Title="XemuHddImageEditor">
 	<Window.DataTemplates>
         <DataTemplate DataType="vm:FileViewModel">

@@ -14,11 +14,11 @@ public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
 
         InitializeComponent();
         
-        AddHandler(DragDrop.DropEvent, Drop);
+        AddHandler(DragDrop.DropEvent, OnDrop);
     }
 
-    private void Drop(object? sender, DragEventArgs e)
+    private void OnDrop(object? sender, DragEventArgs e)
     {
-        System.Diagnostics.Debug.WriteLine("Drop");
+        System.Diagnostics.Debug.WriteLine("MainWindow.OnDrop");
     }
 }
