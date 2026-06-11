@@ -229,7 +229,7 @@
                     <StackPanel Orientation="Vertical">
                         <ToggleButton x:Name="ExpanderHeader"
                                     HorizontalAlignment="Stretch"
-                                    Margin="5,0,0,0"
+                                    Margin="0,0,0,0"
                                     Theme="{StaticResource InvisibleToggleButton}"
                                     MinHeight="{TemplateBinding MinHeight}"
                                     CornerRadius="{TemplateBinding CornerRadius}"
@@ -255,13 +255,17 @@
                             MinHeight="0"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Stretch"
-                            Padding="10,0,0,0">
-                            <ContentPresenter x:Name="PART_ContentPresenter"
-                                            Content="{TemplateBinding Content}"
-                                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                                            Foreground="{TemplateBinding Foreground}"
-                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            Padding="0,0,0,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch">
+                                <Border Width="1" Margin="10,1,5,0" Background="{StaticResource OpenFolderFillBack}" />
+                                <ContentPresenter x:Name="PART_ContentPresenter"
+                                                Margin="0,0,0,0"
+                                                Content="{TemplateBinding Content}"
+                                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                Foreground="{TemplateBinding Foreground}"
+                                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </StackPanel>
                         </Border>
                     </StackPanel>
                 </ControlTemplate>
