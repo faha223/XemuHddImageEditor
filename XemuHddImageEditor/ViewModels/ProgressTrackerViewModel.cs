@@ -23,12 +23,8 @@
         public ProgressTrackerViewModel()
         {
             // This is debug data
-            Tasks = new Dictionary<string, Action>
-            {
-                { "Extracting C:\\Audio.xbe", () => { } },
-                { "Extracting C:\\xboxdash.xbe", () => { } }
-            };
-            NumTasksCompleted = 1;
+            Tasks = [];
+            NumTasksCompleted = 0;
         }
 
         public event EventHandler? CloseRequested;

@@ -16,12 +16,11 @@
         <SolidColorBrush x:Key="OpenFolderFillFront" Color="#262626" />
         <LinearGradientBrush x:Key="ClosedFolderFillBack" StartPoint="0,0" EndPoint="0,14">
             <GradientStop Offset="0" Color="#2d6a29" />
-            <GradientStop Offset="0.23" Color="#1c4219" />
+            <GradientStop Offset="0.2" Color="#1c4219" />
             <GradientStop Offset="1" Color="#1c4219" />
         </LinearGradientBrush>
         <LinearGradientBrush x:Key="ClosedFolderFillFront" StartPoint="0,0" EndPoint="0,14">
             <GradientStop Offset="0" Color="#343434" />
-            <GradientStop Offset="0.75" Color="#2C2C2C" />
             <GradientStop Offset="1" Color="#262626" />
         </LinearGradientBrush>
         <SolidColorBrush x:Key="FileIconFill" Color="#FFDDDDDD" />
@@ -72,7 +71,19 @@
                              Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
 		</DrawingGroup>
 
-        <!-- Closed Folder Icon - Large -->
+        <DrawingGroup x:Key="ClosedFolderIconWithFileLarge">
+            <!-- Back -->
+            <GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
+                             Brush="{StaticResource ClosedFolderFillBack}" Pen="{StaticResource ThinBlackLine}" />
+            <!-- File -->
+            <GeometryDrawing Geometry="M 1,4 L 1,2.25 L 15,2.25 L 15,4 Z"
+                             Brush="{StaticResource FileIconFill}" Pen="{StaticResource ThinBlackLine}" />
+            <!-- Front -->
+            <GeometryDrawing Geometry="M 0,13.5 L 0,3.5 L 0.5,3 L 15.5,3 L 16,3.5 L 16,13.5 Z"
+                             Brush="{StaticResource ClosedFolderFillFront}" Pen="{StaticResource ThinBlackLine}" />
+        </DrawingGroup>
+
+        <!-- Arrow Folder Icon - Large -->
 		<DrawingGroup x:Key="ArrowFolderIconLarge">
             <!-- Back -->
             <GeometryDrawing Geometry="M 0,13.5 L 16,13.5 L 16,2 L 15.5,1.5 L 7,1.5 L 5,0 L 0.5,0 L 0,0.5 Z"
@@ -118,10 +129,6 @@
             <!-- </GeometryDrawing> -->
 		</DrawingGroup>
 
-        <DrawingGroup x:Key="ChildDirectoryIndicator">
-            <GeometryDrawing Geometry="M 0,0 L 10,0 M 5,-5 L 5,5" Pen="{StaticResource ThickGreenLine}" />
-        </DrawingGroup>
-
         <!-- Control Themes -->
         <ControlTheme x:Key="{x:Type ListBoxItem}" TargetType="ListBoxItem">
             <Setter Property="Background" Value="Transparent" />
@@ -148,6 +155,8 @@
                 <!-- <Setter Property="BorderBrush" Value="Green" /> -->
             </Style>
         </ControlTheme>
+
+        <!-- Used for the DirectoryTree view -->
         <ControlTheme x:Key="InvisibleListBox" TargetType="ListBox">
             <Setter Property="Template">
                 <ControlTemplate>
@@ -159,6 +168,8 @@
                 </ControlTemplate>
             </Setter>
         </ControlTheme>
+
+        <!-- Used for the Directory view -->
         <ControlTheme x:Key="FlowLayoutListBox" TargetType="ListBox">
             <Setter Property="ItemsPanel">
                 <ItemsPanelTemplate>
@@ -175,6 +186,8 @@
                 </ControlTemplate>
             </Setter>
         </ControlTheme>
+
+        <!-- Used for the DirectoryTree Expander toggle button -->
         <ControlTheme x:Key="InvisibleToggleButton" TargetType="ToggleButton">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{DynamicResource ToggleButtonForeground}" />
@@ -207,6 +220,8 @@
                 </ControlTemplate>
             </Setter>
         </ControlTheme>
+
+        <!-- Used for the DirectoryTree Expander-->
         <ControlTheme x:Key="DirectoryExpander" TargetType="Expander">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Template">

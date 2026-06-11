@@ -1,11 +1,15 @@
 ﻿<UserControl xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:XemuHddImageEditor.ViewModels"
+		xmlns:converters="using:XemuHddImageEditor.Converters"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Class="XemuHddImageEditor.Views.Directory"
 		x:DataType="vm:DirectoryViewModel">
+	<UserControl.Resources>
+		<converters:GreaterThanZeroToBooleanConverter x:Key="GreaterThanZeroToBooleanConverter" />
+	</UserControl.Resources>
 	<UserControl.DataTemplates>
 		<DataTemplate DataType="vm:FileViewModel">
 			<Border Background="Transparent" MinWidth="100">
@@ -42,10 +46,26 @@
 				</Border.ContextMenu>
 				<StackPanel Margin="5">
 					<Border Width="64" Height="64" Background="Transparent">
-						<Image HorizontalAlignment="Center" VerticalAlignment="Center">
-							<Image.Source>
-								<DrawingImage Drawing="{StaticResource ClosedFolderIconLarge}" />
-							</Image.Source>
+						<Image x:Name="FolderImage" 
+							   HorizontalAlignment="Center" 
+							   VerticalAlignment="Center" 
+							   Classes.hasContent="{Binding Contents.Count, Converter={StaticResource GreaterThanZeroToBooleanConverter}}">
+							<Image.Styles>
+								<Style Selector="Image:not(.hasContent)">
+									<Setter Property="Source">
+										<Setter.Value>
+											<DrawingImage Drawing="{StaticResource ClosedFolderIconLarge}" />
+										</Setter.Value>
+									</Setter>
+								</Style>
+								<Style Selector="Image.hasContent">
+									<Setter Property="Source">
+										<Setter.Value>
+											<DrawingImage Drawing="{StaticResource ClosedFolderIconWithFileLarge}" />
+										</Setter.Value>
+									</Setter>
+								</Style>
+							</Image.Styles>
 						</Image>
 					</Border>
 					<TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Width="100" TextWrapping="Wrap" TextAlignment="Center" />

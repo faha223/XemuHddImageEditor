@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/FatX.Net.UnitTests/FatX.Net.UnitTests.csproj" />
+    <Project Path="tests/QCow2.Net.UnitTests/QCow2.Net.UnitTests.csproj" />
+  </Folder>
+  <Project Path="FatX.Net/FatX.Net.csproj" />
+  <Project Path="InteropHelpers/InteropHelpers.csproj" />
+  <Project Path="QCow2.Net/QCow2.Net.csproj" />
+  <Project Path="XemuHddImageEditor/XemuHddImageEditor.csproj" />
+</Solution>
