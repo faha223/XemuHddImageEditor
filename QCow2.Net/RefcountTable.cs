@@ -7,7 +7,7 @@ namespace QCow2.Net
     {
         public List<RefcountTableEntry> Entries {get; private set;} = [];
 
-        public void Read(FileStream source, FileHeader fileHeader)
+        public void Read(FileStream source, ImageHeaderV3 fileHeader)
         {
             Entries.Clear();
 

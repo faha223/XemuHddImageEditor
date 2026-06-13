@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace QCow2.Net.Structures
 { 
     [StructLayout(LayoutKind.Explicit, Size = 104)]
-    public struct FileHeader
+    public struct ImageHeaderV3
     {
         [BigEndian]
         [FieldOffset(0)]
@@ -62,15 +62,15 @@ namespace QCow2.Net.Structures
         /* These fields are only present if Version is >= 3 */
         [BigEndian]
         [FieldOffset(72)]
-        public ulong IncompatibleFeatures;
+        public IncompatibleFeatures IncompatibleFeatures;
 
         [BigEndian]
         [FieldOffset(80)]
-        public ulong CompatibleFeatures;
+        public CompatibleFeatures CompatibleFeatures;
         
         [BigEndian]
         [FieldOffset(88)]
-        public ulong AutoclearFeatures;
+        public AutoclearFeatures AutoclearFeatures;
 
         [BigEndian]
         [FieldOffset(96)]

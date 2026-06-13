@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using InteropHelpers;
 using QCow2.Net.Enums;
 using QCow2.Net.Structures;
@@ -6,8 +7,8 @@ namespace QCow2.Net
 {
     public class QCow2Image
     {
-        public FileHeader fileHeader;
-        public List<HeaderExtensionRequiredData> headerExtensions = [];
+        public ImageHeaderV3 ImageHeader {get; private set;}
+        public List<HeaderExtensionRequiredData> headerExtensions { get; private set; } = [];
 
         public RefcountTable refcountTable = new();
         public L1Table l1Table = new();
@@ -29,8 +30,22 @@ namespace QCow2.Net
 
         private void Load()
         {
-            fileHeader = _source.Read<FileHeader>(true);
-            PrintFileHeader(fileHeader);
+            ImageHeader = _source.Read<ImageHeaderV3>(true);
+            PrintFileHeader(ImageHeader);
+            if(ImageHeader.IncompatibleFeatures.HasFlag(IncompatibleFeatures.Compression))
+            {
+                Console.WriteLine("File has Compression feature enabled.");
+            }
+            if(ImageHeader.HeaderLength > 104)
+            {
+                Console.WriteLine("File has optional bit field and padding");
+                byte optionalBits = (byte)_source.ReadByte();
+                Console.WriteLine($"Optional Bits: {optionalBits:B8}");
+
+                // Consume the padding bytes until we reach the end of the header
+                while(_source.Position < ImageHeader.HeaderLength)
+                    _ = _source.ReadByte();
+            }
 
             Console.WriteLine("--- Start of Header Extensions ---");
             var headerExtension = _source.Read<HeaderExtensionRequiredData>(true);
@@ -46,7 +61,7 @@ namespace QCow2.Net
                     for(uint i = 0; i < numEntries; i++)
                     {
                         Console.WriteLine("Feature:");
-                        var featureName = _source.Read<FeatureNameTableEntry>(false);
+                        var featureName = _source.Read<FeatureNameTableEntry>(true);
                         PrintFeatureName(featureName);
                     }
                 }
@@ -69,34 +84,48 @@ namespace QCow2.Net
 
             Console.WriteLine("--- End of Header Extensions ---");
 
-            // TODO: Read the RefcountTable and L1Table
+            // Read the RefcountTable and L1Table
         }
 
-        private static void PrintFileHeader(FileHeader fileHeader)
+        public long GetClusterOffset(long offset)
         {
-            Console.WriteLine($"Magic: \"{(char)(fileHeader.Magic >> 24)}{(char)((fileHeader.Magic & 0xff0000) >> 16)}{(char)((fileHeader.Magic & 0xff00) >> 8)}\\x{(fileHeader.Magic & 0xff):x}\"");
-            Console.WriteLine($"Version: {fileHeader.Version}");
-            Console.WriteLine($"BackingFileOffset: {fileHeader.BackingFileOffset}");
-            Console.WriteLine($"BackingFileSize: {fileHeader.BackingFileSize}");
-            Console.WriteLine($"ClusterBits: {fileHeader.ClusterBits}");
-            Console.WriteLine($"ClusterSize: {(long)Math.Pow(2, fileHeader.ClusterBits)}");
-            Console.WriteLine($"Size: {fileHeader.Size}");
-            Console.WriteLine($"CryptMethod: {fileHeader.CryptMethod}");
-            Console.WriteLine($"L1Size: {fileHeader.L1Size}");
-            Console.WriteLine($"L1TableOffset: {fileHeader.L1TableOffset}");
-            Console.WriteLine($"RefcountTableOffset: {fileHeader.RefcountTableOffset}");
-            Console.WriteLine($"RefcountTableClusters: {fileHeader.RefcountTableClusters}");
-            Console.WriteLine($"NumberOfSnapshots: {fileHeader.NumberOfSnapshots}");
-            Console.WriteLine($"SnapshotsOffsets: {fileHeader.SnapshotsOffsets}");
+            long cluster_size = (long)Math.Pow(2, ImageHeader.ClusterBits);
+            long l2_entries = cluster_size / sizeof(ulong);
+
+            long l2_index = (offset / cluster_size) % l2_entries;
+            long l1_index = (offset / cluster_size) / l2_entries;
+
+            L2Table l2_table = new L2Table(_source, l1Table.GetEntry(l1_index).ImageOffset, (ulong)cluster_size);
+            long cluster_offset = l2_table.GetEntry(l2_index / Marshal.SizeOf<L2TableEntry>()).HostClusterOffset; // Clear the top 2 bits which are used for flags);
+
+            return cluster_offset + (offset % cluster_size);
+        }
+
+        private static void PrintFileHeader(ImageHeaderV3 imageHeader)
+        {
+            Console.WriteLine($"Magic: \"{(char)(imageHeader.Magic >> 24)}{(char)((imageHeader.Magic & 0xff0000) >> 16)}{(char)((imageHeader.Magic & 0xff00) >> 8)}\\x{(imageHeader.Magic & 0xff):x}\"");
+            Console.WriteLine($"Version: {imageHeader.Version}");
+            Console.WriteLine($"BackingFileOffset: {imageHeader.BackingFileOffset}");
+            Console.WriteLine($"BackingFileSize: {imageHeader.BackingFileSize}");
+            Console.WriteLine($"ClusterBits: {imageHeader.ClusterBits}");
+            Console.WriteLine($"ClusterSize: {(long)Math.Pow(2, imageHeader.ClusterBits)}");
+            Console.WriteLine($"Size: {imageHeader.Size}");
+            Console.WriteLine($"CryptMethod: {imageHeader.CryptMethod}");
+            Console.WriteLine($"L1Size: {imageHeader.L1Size}");
+            Console.WriteLine($"L1TableOffset: {imageHeader.L1TableOffset}");
+            Console.WriteLine($"RefcountTableOffset: {imageHeader.RefcountTableOffset}");
+            Console.WriteLine($"RefcountTableClusters: {imageHeader.RefcountTableClusters}");
+            Console.WriteLine($"NumberOfSnapshots: {imageHeader.NumberOfSnapshots}");
+            Console.WriteLine($"SnapshotsOffsets: {imageHeader.SnapshotsOffsets}");
 
             Console.WriteLine("--- The next values are expected to be 0 unless Version = 3+ ---");
 
-            Console.WriteLine($"IncompatibleFeatures: {fileHeader.IncompatibleFeatures:B64}");
-            Console.WriteLine($"CompatibleFeatures: {fileHeader.CompatibleFeatures:B64}");
-            Console.WriteLine($"AutoclearFeatures: {fileHeader.AutoclearFeatures:B64}");
-            Console.WriteLine($"RefcountOrder: {fileHeader.RefcountOrder}");
-            Console.WriteLine($"RefcountBits: {1UL << (int)fileHeader.RefcountOrder}");
-            Console.WriteLine($"HeaderLength: {fileHeader.HeaderLength}");
+            Console.WriteLine($"IncompatibleFeatures: {imageHeader.IncompatibleFeatures}");
+            Console.WriteLine($"CompatibleFeatures: {imageHeader.CompatibleFeatures}");
+            Console.WriteLine($"AutoclearFeatures: {imageHeader.AutoclearFeatures}");
+            Console.WriteLine($"RefcountOrder: {imageHeader.RefcountOrder}");
+            Console.WriteLine($"RefcountBits: {1UL << (int)imageHeader.RefcountOrder}");
+            Console.WriteLine($"HeaderLength: {imageHeader.HeaderLength}");
         }
 
         private static void PrintFeatureName(FeatureNameTableEntry featureName)

@@ -1,4 +1,6 @@
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using QCow2.Net.Structures;
 using Xunit;
 
 namespace QCow2.Net.UnitTests
@@ -12,6 +14,20 @@ namespace QCow2.Net.UnitTests
         private static readonly string rawFilePath = Path.Combine(hddImageDirectory, rawImageFileName);
 
         private const int bufferSize = 4 * 1024 * 1024; // 4 MiB
+
+        static QCow2Tests()
+        {
+            Console.WriteLine("This system is little-endian: " + BitConverter.IsLittleEndian);
+        }
+
+        [Fact]
+        public void TestQCow2HeaderSize()
+        {
+            const int headerSize = 104;
+            int actualHeaderSize = Marshal.SizeOf<ImageHeaderV3>();
+            Assert.Equal(headerSize, actualHeaderSize);
+        }
+
         [Fact]
         public void TestConvertQCow2ToRaw()
         {
@@ -19,20 +35,17 @@ namespace QCow2.Net.UnitTests
 
             var fileStream = new FileStream(qcow2FilePath, FileMode.Open, FileAccess.Read);
             var rawFileStream = new FileStream(rawFilePath, FileMode.Open, FileAccess.Read);
-            var qcow2Stream = new Qcow2Stream(fileStream);
-            
-            while(qcow2Stream.Position < qcow2Stream.Length)
-            {
-                var bytesRead = qcow2Stream.Read(buffer, 0, buffer.Length);
-                if (bytesRead == 0)
-                {
-                    break;
-                }
-            }
+            var qcow2Stream = new QCow2Stream(fileStream);
 
             var sha256 = SHA256.Create();
+
+            // Compare their lengths first, if they are not the same, there is no need to compare the contents
+            Assert.Equal(rawFileStream.Length, qcow2Stream.Length);
+
+            // Compute the hash of both streams in chunks to avoid loading the entire file into memory
+            // These are 8.0 GiB files, so we don't want to load them into memory
             var expectedHash = sha256.ComputeHash(rawFileStream);
-            var actualHash = sha256.ComputeHash(fileStream);
+            var actualHash = sha256.ComputeHash(qcow2Stream);
 
             Assert.True(expectedHash.SequenceEqual(actualHash), "The hashes of the raw file and the qcow2 file do not match, indicating that the conversion was not successful.");
         }

@@ -7,7 +7,7 @@ namespace QCow2.Net
     {
         public List<L1TableEntry> Entries { get; private set; } = [];
 
-        public void Read(FileStream source, FileHeader fileHeader)
+        public void Read(FileStream source, ImageHeaderV3 fileHeader)
         {
             Entries.Clear();
 
@@ -15,12 +15,19 @@ namespace QCow2.Net
             while((ulong)source.Position < fileHeader.L1TableOffset + (fileHeader.L1Size * 8))
             {
                 // Read L1 Table Entries
-                var entry = source.Read<L1TableEntry>(true);
-                Console.WriteLine($"Entry (raw): {entry.Bits:B64}");
-                Console.WriteLine($"Entry: {(entry.Bits & 0x07FFFFFFFFFFFF00L) >> 9}");
+                var entry = new L1TableEntry(source.Read<ulong>(true));
+                Console.WriteLine($"Entry: {entry.ImageOffset} ({entry.ImageOffset:X16})");
 
                 Entries.Add(entry);
             }
+        }
+
+        public L1TableEntry GetEntry(long index)
+        {
+            if(index < 0 || index >= Entries.Count)
+                throw new IndexOutOfRangeException($"L1 Table index {index} is out of range. Valid range is 0 to {Entries.Count - 1}.");
+
+            return Entries[(int)index];
         }
     }
 }

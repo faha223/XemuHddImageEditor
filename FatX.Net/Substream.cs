@@ -1,6 +1,3 @@
-using System.Security.Cryptography.X509Certificates;
-using FatX.Net.Structures;
-
 namespace FatX.Net
 {
     public class Substream(Stream underlyingStream, long offset, long size) : Stream
@@ -52,21 +49,16 @@ namespace FatX.Net
         /// <returns></returns>
         public override long Seek(long offset, SeekOrigin origin)
         {
-            switch(origin)
+            Position = origin switch
             {
-                case SeekOrigin.Begin:
-                    // new position is equal to offset, clamped to the interval [0, Size]
-                    Position = Math.Clamp(offset, 0, Size); 
-                    break;
-                case SeekOrigin.End:
-                    // new position is equal to offset, clamped to the interval [0, Size]
-                    Position = Math.Clamp(Size + offset, 0, Size); // 
-                    break;
-                case SeekOrigin.Current:
-                    // new position is equal to the current position plus the offset, clamped to the interval [0, Size]
-                    Position = Math.Clamp(Position + offset, 0, Size);
-                    break;
-            }
+                // new position is equal to offset, clamped to the interval [0, Size]
+                SeekOrigin.Begin => Math.Clamp(offset, 0, Size),    
+                // new position is equal to offset, clamped to the interval [0, Size]
+                SeekOrigin.End => Math.Clamp(Size + offset, 0, Size),
+                // new position is equal to the current position plus the offset, clamped to the interval [0, Size]
+                SeekOrigin.Current => Math.Clamp(Position + offset, 0, Size),
+                _ => throw new ArgumentException("Invalid SeekOrigin", nameof(origin))
+            };
             return Position;
         }
 
