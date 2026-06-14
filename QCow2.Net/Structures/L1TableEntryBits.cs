@@ -1,10 +1,10 @@
-using InteropHelpers;
 using System.Runtime.InteropServices;
+using InteropHelpers;
 
 namespace QCow2.Net.Structures
 {
     [StructLayout(LayoutKind.Explicit, Size = 8)]
-    public struct RefcountTableEntry
+    public struct L1TableEntryBits
     {
         [BigEndian]
         [FieldOffset(0)]

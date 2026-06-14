@@ -1,4 +1,4 @@
-using System.Reflection.Metadata;
+using InteropHelpers;
 using FatX.Net.Helpers;
 using FatX.Net.Structures;
 

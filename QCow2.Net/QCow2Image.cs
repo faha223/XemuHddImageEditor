@@ -10,22 +10,28 @@ namespace QCow2.Net
         public ImageHeaderV3 ImageHeader {get; private set;}
         public List<HeaderExtensionRequiredData> headerExtensions { get; private set; } = [];
 
-        public RefcountTable refcountTable = new();
-        public L1Table l1Table = new();
+        public RefcountTable refcountTable;
+        public L1Table l1Table;
 
         private Stream _source;
 
-        public QCow2Image(string filename)
+        private Stream _allZeroesStream => new MemoryStream(new byte[1 << (int)ImageHeader.ClusterBits]);
+
+        public QCow2Image(string filename): this(new FileStream(filename, FileMode.Open))
         {
-            using FileStream source = new(filename, FileMode.Open);
-            _source = source;
-            Load();
         }
 
         public QCow2Image(Stream source)
         {
             _source = source;
             Load();
+
+            // Read the RefcountTable and L1Table
+            refcountTable = RefcountTable.Read(_source, ImageHeader);
+            //refcountTable.Print();
+
+            l1Table = L1Table.Read(_source, ImageHeader);
+            l1Table.Print();
         }
 
         private void Load()
@@ -83,11 +89,21 @@ namespace QCow2.Net
             }
 
             Console.WriteLine("--- End of Header Extensions ---");
-
-            // Read the RefcountTable and L1Table
         }
 
-        public long GetClusterOffset(long offset)
+        public bool IsClusterCompressed(long offset)
+        {
+            long cluster_size = 1U << (int)ImageHeader.ClusterBits;
+            long l2_entries = cluster_size / sizeof(ulong);
+
+            long l2_index = (offset / cluster_size) % l2_entries;
+            long l1_index = (offset / cluster_size) / l2_entries;
+
+            L2Table l2_table = new L2Table(_source, l1Table.GetEntry(l1_index).ImageOffset, ImageHeader);
+            return l2_table.GetEntry(l2_index / Marshal.SizeOf<ulong>()).IsCompressed;
+        }
+
+        public Stream GetClusterStream(long offset)
         {
             long cluster_size = (long)Math.Pow(2, ImageHeader.ClusterBits);
             long l2_entries = cluster_size / sizeof(ulong);
@@ -95,10 +111,24 @@ namespace QCow2.Net
             long l2_index = (offset / cluster_size) % l2_entries;
             long l1_index = (offset / cluster_size) / l2_entries;
 
-            L2Table l2_table = new L2Table(_source, l1Table.GetEntry(l1_index).ImageOffset, (ulong)cluster_size);
-            long cluster_offset = l2_table.GetEntry(l2_index / Marshal.SizeOf<L2TableEntry>()).HostClusterOffset; // Clear the top 2 bits which are used for flags);
+            L2Table l2_table = new L2Table(_source, l1Table.GetEntry(l1_index).ImageOffset, ImageHeader);
+            var entry = l2_table.GetEntry(l2_index / Marshal.SizeOf<ulong>());
+            if(entry.IsUnallocated)
+                return _allZeroesStream;
 
-            return cluster_offset + (offset % cluster_size);
+            if(!entry.IsCompressed)
+            {
+                var clusterDescriptor = entry.StandardClusterDescriptor;
+                if(clusterDescriptor.ReadsAsZero)
+                    return _allZeroesStream;
+                var clusterStream = new Substream(_source, clusterDescriptor.HostClusterOffset, cluster_size);
+                clusterStream.Seek(offset % cluster_size, SeekOrigin.Begin);
+                return clusterStream;
+            }
+            else
+            {
+                return _allZeroesStream;
+            }
         }
 
         private static void PrintFileHeader(ImageHeaderV3 imageHeader)

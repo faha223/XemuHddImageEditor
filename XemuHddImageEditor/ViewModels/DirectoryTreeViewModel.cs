@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using FatX.Net;
+using QCow2.Net;
 
 namespace XemuHddImageEditor.ViewModels
 {
@@ -43,7 +44,11 @@ namespace XemuHddImageEditor.ViewModels
         {
             SelectedDirectory = null;
             Subdirectories.Clear();
-            _img = new DiskImage(imgPath);
+            Stream stream = System.IO.File.Open(imgPath, FileMode.Open, FileAccess.ReadWrite);
+            if(Path.GetExtension(imgPath).Equals(".qcow2", StringComparison.OrdinalIgnoreCase))
+                stream = new QCow2Stream(stream);
+            _img = new DiskImage(stream);
+            
             foreach(var dir in _img.Partitions.Select(GetDirectoryViewModel))
                 Subdirectories.Add(dir);
             

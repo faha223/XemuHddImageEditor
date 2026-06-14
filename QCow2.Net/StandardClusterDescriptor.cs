@@ -1,6 +1,6 @@
 namespace QCow2.Net
 {
-    public class StandardClusterDecriptor(ulong bits)
+    public class StandardClusterDescriptor(ulong bits)
     {
         /// <summary>
         /// Bit       0:    If set to 1, the cluster reads as all zeros. The host
@@ -23,7 +23,16 @@ namespace QCow2.Net
         /// 56 - 61:    Reserved (set to 0)
         /// </summary>
         private ulong _bits = bits;
+
+        public bool ReadsAsZero => (_bits & 1) != 0;
         
-        public long ClusterOffset => (long)(_bits & Constants.Bits9Through55); // Clear the top 2 bits which are used for flags
+        public long HostClusterOffset => (long)(_bits & Constants.Bits9Through55); // Clear the top 2 bits which are used for flags
+
+        public void Print()
+        {
+            Console.WriteLine($"Standard Cluster Descriptor: {_bits:X16}");
+            Console.WriteLine($"   ReadsAsZero (bit 0): {ReadsAsZero}");
+            Console.WriteLine($"   HostClusterOffset (bits 9-55): {HostClusterOffset:X16}");
+        }
     }
 }

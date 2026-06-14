@@ -17,9 +17,22 @@ namespace QCow2.Net
         ///                 1 if its refcount is exactly one. This information is only 
         ///                 accurate in the active L1 table.
         /// </summary>
-        public ulong ImageOffset => (_bits & Constants.Bits9Through55) >> 9; // Clear the top bit which is used for the refcount flag
+        public ulong ImageOffset => (_bits & Constants.Bits9Through55); // Clear the top bit which is used for the refcount flag
+
+        public bool IsAllocated => ImageOffset != 0;
 
         public bool RefcountIsOne => (_bits & (1UL << 63)) != 0;
 
+        public void Print()
+        {
+            Console.WriteLine($"L1 Table Entry: {_bits:X16}");
+            if(!IsAllocated)
+            {
+                Console.WriteLine("   Unallocated");
+                return;
+            }
+            Console.WriteLine($"   ImageOffset (bits 9-55): {ImageOffset:X16}");
+            Console.WriteLine($"   RefcountIsOne (bit 63): {RefcountIsOne}");
+        }
     }
 }

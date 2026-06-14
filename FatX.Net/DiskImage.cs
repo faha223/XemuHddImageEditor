@@ -6,12 +6,6 @@ namespace FatX.Net
     {
         public List<Partition> Partitions { get; private set; } = [];
 
-        public DiskImage(string filename)
-        {
-            var stream = new FileStream(filename, FileMode.Open);
-            Load(stream);
-        }
-
         public DiskImage(Stream stream)
         {
             Load(stream);

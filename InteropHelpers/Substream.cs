@@ -1,4 +1,4 @@
-namespace FatX.Net
+namespace InteropHelpers
 {
     public class Substream(Stream underlyingStream, long offset, long size) : Stream
     {

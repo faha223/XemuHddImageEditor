@@ -59,5 +59,12 @@ namespace QCow2.Net
                 return true;
             }
         }
+
+        public void Print()
+        {
+            Console.WriteLine($"Compressed Clusters Descriptor: {_bits:X16}");
+            Console.WriteLine($"   HostClusterOffset (bits 0-{X-1}): {HostClusterOffset:X16}");
+            Console.WriteLine($"   AdditionalSectors (bits {X}-61): {AdditionalSectors}");
+        }
     }
 }

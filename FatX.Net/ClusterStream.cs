@@ -1,4 +1,4 @@
-﻿
+﻿using InteropHelpers;
 
 namespace FatX.Net
 {

@@ -32,9 +32,10 @@ namespace QCow2.Net
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            long bytesRead = Math.Clamp(count, 0, Length - Position);
+            using var clusterStream = _image.GetClusterStream(Position);
+            int bytesRead = clusterStream.Read(buffer, offset, count);
             Position += bytesRead;
-            return (int)bytesRead;
+            return bytesRead;
         }
 
         public override long Seek(long offset, SeekOrigin origin)

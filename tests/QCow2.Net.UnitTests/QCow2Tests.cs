@@ -18,6 +18,11 @@ namespace QCow2.Net.UnitTests
         static QCow2Tests()
         {
             Console.WriteLine("This system is little-endian: " + BitConverter.IsLittleEndian);
+            ulong bits9Through55 = 0;
+            for(int i = 9; i <= 55; i++)
+                bits9Through55 |= (1UL << i);
+
+            Console.WriteLine("Bits 9 through 55 mask: " + Constants.Bits9Through55.ToString("X"));
         }
 
         [Fact]
@@ -42,12 +47,22 @@ namespace QCow2.Net.UnitTests
             // Compare their lengths first, if they are not the same, there is no need to compare the contents
             Assert.Equal(rawFileStream.Length, qcow2Stream.Length);
 
+            byte[] expectedPage = new byte[4096];
+            byte[] actualPage = new byte[4096];
+            while(rawFileStream.Position < rawFileStream.Length)
+            {
+                rawFileStream.ReadExactly(expectedPage, 0, expectedPage.Length);
+                qcow2Stream.ReadExactly(actualPage, 0, actualPage.Length);
+
+                Assert.True(expectedPage.SequenceEqual(actualPage), $"The contents of the raw file and the qcow2 file do not match at position {rawFileStream.Position - expectedPage.Length}. This indicates that the conversion was not successful.");
+            }
+
             // Compute the hash of both streams in chunks to avoid loading the entire file into memory
             // These are 8.0 GiB files, so we don't want to load them into memory
-            var expectedHash = sha256.ComputeHash(rawFileStream);
-            var actualHash = sha256.ComputeHash(qcow2Stream);
+            //var expectedHash = sha256.ComputeHash(rawFileStream);
+            //var actualHash = sha256.ComputeHash(qcow2Stream);
 
-            Assert.True(expectedHash.SequenceEqual(actualHash), "The hashes of the raw file and the qcow2 file do not match, indicating that the conversion was not successful.");
+            //Assert.True(expectedHash.SequenceEqual(actualHash), "The hashes of the raw file and the qcow2 file do not match, indicating that the conversion was not successful.");
         }
     }
 }
